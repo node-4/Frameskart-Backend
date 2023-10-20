@@ -1,12 +1,13 @@
 const express = require("express");
-const {
-  loginUser,verifyOtplogin,getUserDetails
-} = require("../Controller/userController");
+const auth = require("../Controller/userController");
 const router = express.Router();
 const authJwt = require("../middleware/authJwt");
 
-router.route("/login").post(loginUser);
-router.route("/verify/otp").post(verifyOtplogin);
-router.route("/me").get(authJwt.verifyToken, getUserDetails);
 
-module.exports = router;
+
+module.exports = (app) => {
+        app.post("/api/v1/user/login", auth.loginUser);
+        app.post("/api/v1/user/socialLogin", auth.socialLogin);
+        app.post("/api/v1/user/verify/otp", auth.verifyOtplogin);
+        app.get("/api/v1/user/me", authJwt.verifyToken, auth.getUserDetails);
+}

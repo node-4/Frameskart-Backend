@@ -12,8 +12,23 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  name: {
-    type: String,
+  firstName: {
+    type: String
+  },
+  lastName: {
+    type: String
+  },
+  mobileNumber: {
+    type: String
+  },
+  socialId: {
+    type: String
+  },
+  socialType: {
+    type: String
+  },
+  password: {
+    type: String
   },
   email: {
     type: String,
@@ -21,10 +36,13 @@ const userSchema = new mongoose.Schema({
   },
   userType: {
     type: String,
-    enum: ["User", "Admin","Vendor"],
+    enum: ["User", "Admin", "Vendor"],
     default: "User"
   },
-  
+  isWhatApp: {
+    type: Boolean,
+    default: false,
+  },
   photoUrl: String,
   image: {
     type: String,
@@ -33,9 +51,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default:
       "https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png",
-  },},
+  },
+},
   { timestamps: true }
-  
+
 );
 
 module.exports = mongoose.model("User", userSchema);

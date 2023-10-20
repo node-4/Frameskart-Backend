@@ -1,50 +1,79 @@
-const User = require("../Model/userModel");
-const dotenv = require("dotenv");
 require("dotenv").config({ path: "./config/config.env" });
 const express = require("express");
-const router = express.Router();
 const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
-const config = require("config");
 const randomatic = require("randomatic");
-const cloudinary = require("cloudinary").v2;
-cloudinary.config({
-  cloud_name: "dtijhcmaa",
-  api_key: "624644714628939",
-  api_secret: "tU52wM1-XoaFD2NrHbPrkiVKZvY",
-});
+const User = require("../Model/userModel");
 
+exports.socialLogin = async (req, res) => {
+  try {
+    let userData = await User.findOne({ $or: [{ mobileNumber: req.body.mobileNumber }, { socialId: req.body.socialId }, { socialType: req.body.socialType }] });
+    if (userData) {
+      let updateResult = await User.findByIdAndUpdate({ _id: userData._id }, { $set: { deviceToken: req.body.deviceToken } }, { new: true });
+      if (updateResult) {
+        const token = jwt.sign({ id: updateResult._id }, "node5flyweis");
+        let obj = {
+          _id: updateResult._id,
+          firstName: updateResult.firstName,
+          lastName: updateResult.lastName,
+          socialId: updateResult.socialId,
+          userType: updateResult.userType,
+          token: token
+        }
+        return res.status(200).send({ status: 200, message: "Login successfully ", data: obj, });
+      }
+    } else {
+      req.body.firstName = req.body.firstName;
+      req.body.lastName = req.body.lastName;
+      req.body.mobileNumber = req.body.mobileNumber;
+      let email = req.body.email;
+      req.body.email = email.split(" ").join("").toLowerCase();
+      req.body.socialId = req.body.socialId;
+      req.body.socialType = req.body.socialType;
+      let saveUser = await User(req.body).save();
+      if (saveUser) {
+        const token = jwt.sign({ id: saveUser._id }, "node5flyweis");
+        let obj = {
+          _id: saveUser._id,
+          firstName: saveUser.firstName,
+          lastName: saveUser.lastName,
+          mobileNumber: saveUser.mobileNumber,
+          userType: saveUser.userType,
+          token: token
+        }
+        return res.status(200).send({ status: 200, message: "Login successfully ", data: obj, });
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 exports.loginUser = async (req, res) => {
   try {
-    const { mobileNumber } = req.body;
+    const { mobileNumber, isWhatApp } = req.body;
     let user = await User.findOne({ mobileNumber });
-
     if (!user) {
       const otp = randomatic("0", 4);
-      user = new User({
-        mobileNumber,
-        otp,
-      });
+      user = new User({ mobileNumber, otp, isWhatApp });
       await user.save();
-      res.json({ message: "OTP generated and sent to the user", user });
+      return res.status(200).send({ status: 200, message: "OTP generated and sent to the user.", data: user, });
     } else {
       const otp = randomatic("0", 4);
       user.otp = otp;
       user.isVerified = false;
+      user.isWhatApp = isWhatApp;
       await user.save();
-      res.json({ message: "New OTP generated and sent to the user", user });
+      return res.status(200).send({ status: 200, message: "OTP generated and sent to the user.", data: user, });
     }
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).send({ status: 500, message: "Server error" + error.message });
   }
 };
-
 exports.verifyOtplogin = async (req, res) => {
   try {
     const { mobileNumber, otp } = req.body;
     const user = await User.findOne({ mobileNumber });
-
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -53,27 +82,24 @@ exports.verifyOtplogin = async (req, res) => {
       user.otp = undefined;
       user.isVerified = true;
       await user.save();
-
-      res.json({ message: "OTP verification successful.", user, token });
+      return res.status(200).send({ status: 200, message: "OTP verification successful", data: { user, token }, });
     } else {
-      res.status(401).json({ error: "Invalid OTP" });
+      return res.status(401).send({ status: 401, message: "Invalid OTP", data: {}, });
     }
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).send({ status: 500, message: "Server error" + error.message });
   }
 };
-
 exports.getUserDetails = async (req, res) => {
-    try {
-      const user = await User.findById(req.user._id);
-      if (!user) {
-        res.status(404).send({ status: 404, message: "user not found ", data: {}, });
-      } else {
-        res.status(200).send({ status: 200, message: "get profile ", data: user, });
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      res.status(404).send({ status: 404, message: "user not found ", data: {}, });
+    } else {
+      res.status(200).send({ status: 200, message: "get profile ", data: user, });
     }
-  };
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
