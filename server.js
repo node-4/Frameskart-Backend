@@ -43,7 +43,7 @@ require('./Router/admin.route')(app);
 mongoose.Promise = global.Promise;
 mongoose.set("strictQuery", true);
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true, }).then((data) => {
-        console.log(`Mongodb connected with server: ${data.connection.host} : Shahina-Backend`);
+        console.log(`Mongodb connected with server: ${data.connection.host} : framesKart-Backend`);
 });
 app.listen(process.env.PORT, () => {
         console.log(`Listening on port ${process.env.PORT}!`);

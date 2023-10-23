@@ -5,7 +5,10 @@ const Brand = require("../Model/brandModel");
 const Category = require("../Model/categoryModel");
 const Subcategory = require("../Model/subCategoryModel");
 const offer = require('../Model/offerModel')
+const accessories = require('../Model/accessoriesModel')
 const recommendeYoutube = require("../Model/recommende&youtubeCornerByBanner");
+const colorGender = require("../Model/colorGender");
+const shape = require("../Model/shape");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 exports.registration = async (req, res) => {
@@ -538,6 +541,205 @@ exports.removeBrand = async (req, res) => {
                 } else {
                         await Brand.findByIdAndDelete(brand._id);
                         return res.status(200).json({ message: "Brand Deleted Successfully !" });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.createColorGender = async (req, res) => {
+        try {
+                let findBrand = await colorGender.findOne({ name: req.body.name, type: req.body.type });
+                if (findBrand) {
+                        return res.status(409).json({ message: `${req.body.type} already exit.`, status: 409, data: {} });
+                } else {
+                        const data = {
+                                name: req.body.name,
+                                type: req.body.type,
+                        };
+                        const category = await colorGender.create(data);
+                        return res.status(200).json({ message: `${req.body.type} add successfully.`, status: 200, data: category });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getColorGender = async (req, res) => {
+        try {
+                const categories = await colorGender.find({});
+                if (categories.length > 0) {
+                        return res.status(201).json({ message: "Data Found", status: 200, data: categories, });
+                }
+                return res.status(201).json({ message: "Data not Found", status: 404, data: {}, });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getColorGenderBytype = async (req, res) => {
+        try {
+                const categories = await colorGender.find({ type: req.params.type });
+                if (categories.length > 0) {
+                        return res.status(201).json({ message: "Data Found", status: 200, data: categories, });
+                }
+                return res.status(201).json({ message: "Data not Found", status: 404, data: {}, });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.updateColorGender = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const category = await colorGender.findById(id);
+                if (!category) {
+                        return res.status(404).json({ message: "Data Not Found", status: 404, data: {} });
+                }
+                category.name = req.body.name || category.name;
+                category.type = category.type;;
+                let update = await category.save();
+                return res.status(200).json({ message: "Updated Successfully", data: update });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.removeColorGender = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const category = await colorGender.findById(id);
+                if (!category) {
+                        return res.status(404).json({ message: "Data Not Found", status: 404, data: {} });
+                } else {
+                        await colorGender.findByIdAndDelete(category._id);
+                        return res.status(200).json({ message: "Data Deleted Successfully !" });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.AddShape = async (req, res) => {
+        try {
+                let findShape = await shape.findOne({ name: req.body.name });
+                if (findShape) {
+                        return res.status(409).json({ message: "Shape already exit.", status: 404, data: {} });
+                } else {
+                        if (req.file) {
+                                console.log(req.file);
+                                req.body.image = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
+                        }
+                        const data = { name: req.body.name, image: req.body.image };
+                        const shape1 = await shape.create(data);
+                        return res.status(200).json({ message: "Shape add successfully.", status: 200, data: shape1 });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getShape = async (req, res) => {
+        try {
+                const findShape = await shape.find();
+                if (findShape.length > 0) {
+                        return res.status(200).json({ success: true, data: findShape });
+                } else {
+                        return res.status(404).json({ message: "Shape not found.", status: 200, data: {} });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.updateShape = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const findShape = await shape.findById(id);
+                if (!findShape) {
+                        return res.status(404).json({ message: "Shape Not Found", status: 404, data: {} });
+                }
+                if (req.file) {
+                        findShape.image = req.file.path
+                } else {
+                        findShape.image = shape.image;
+                }
+                findShape.name = req.body.name || findShape.name;
+                let update = await findShape.save();
+                return res.status(200).json({ message: "Updated Successfully", status: 200, data: update });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.removeShape = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const findShape = await shape.findById(id);
+                if (!findShape) {
+                        return res.status(404).json({ message: "Shape Not Found", status: 404, data: {} });
+                } else {
+                        await shape.findByIdAndDelete(findShape._id);
+                        return res.status(200).json({ message: "Shape Deleted Successfully !" });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.createAccessories = async (req, res) => {
+        try {
+                let findAccessories = await accessories.findOne({ name: req.body.name });
+                if (findAccessories) {
+                        return res.status(409).json({ message: "Accessories already exit.", status: 404, data: {} });
+                } else {
+                        if (req.file) {
+                                console.log(req.file);
+                                req.body.image = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
+                        }
+                        const data = { name: req.body.name, price: req.body.price, image: req.body.image };
+                        const accessorie = await accessories.create(data);
+                        return res.status(200).json({ message: "Accessories add successfully.", status: 200, data: accessorie });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getAccessories = async (req, res) => {
+        try {
+                const findShape = await accessories.find();
+                if (findShape.length > 0) {
+                        return res.status(200).json({ success: true, data: findShape });
+                } else {
+                        return res.status(404).json({ message: "Accessories not found.", status: 200, data: {} });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.updateAccessories = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const Accessoriess = await accessories.findById(id);
+                if (!Accessoriess) {
+                        return res.status(404).json({ message: "Accessories Not Found", status: 404, data: {} });
+                }
+                if (req.file) {
+                        Accessoriess.image = req.file.path
+                } else {
+                        Accessoriess.image = Accessoriess.image;
+                }
+                Accessoriess.name = req.body.name || Accessoriess.name;
+                Accessoriess.price = req.body.price || Accessoriess.price;
+                let update = await Accessoriess.save();
+                return res.status(200).json({ message: "Updated Successfully", data: update });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.removeAccessories = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const findShape = await accessories.findById(id);
+                if (!findShape) {
+                        return res.status(404).json({ message: "Accessories Not Found", status: 404, data: {} });
+                } else {
+                        await shape.findByIdAndDelete(findShape._id);
+                        return res.status(200).json({ message: "Accessories Deleted Successfully !" });
                 }
         } catch (error) {
                 return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });

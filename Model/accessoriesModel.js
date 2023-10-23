@@ -5,10 +5,13 @@ const accessSchema = new mongoose.Schema({
         type: String,
         required: [true, "name access Required"],
     },
+    price: {
+        type: Number,
+    },
     image: {
         type: String
     },
-    
+
 });
 
-module.exports = mongoose.model("Access", accessSchema);
+module.exports = mongoose.model("accessories", accessSchema);

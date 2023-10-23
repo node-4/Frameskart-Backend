@@ -13,6 +13,9 @@ const brandSchema = new mongoose.Schema({
         enum: ["Active", "Block"],
         default: "Active"
     },
-});
+},
+{ timestamps: true }
+
+);
 
 module.exports = mongoose.model("Brand", brandSchema);

@@ -10,6 +10,8 @@ const bannerSchema = new mongoose.Schema({
     link: {
         type: String
     },
-});
+},
+    { timestamps: true }
+);
 
 module.exports = mongoose.model("offer", bannerSchema);

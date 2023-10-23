@@ -7,12 +7,9 @@ const bannerSchema = new mongoose.Schema({
     image: {
         type: String
     },
-    link: {
-        type: String
-    },
 },
     { timestamps: true }
 
 );
 
-module.exports = mongoose.model("Banner", bannerSchema);
+module.exports = mongoose.model("shape", bannerSchema);
