@@ -1,6 +1,7 @@
 const User = require("../Model/userModel");
 const storeModel = require("../Model/store");
 const Banner = require('../Model/bannerModel')
+const Brand = require("../Model/brandModel");
 const Category = require("../Model/categoryModel");
 const Subcategory = require("../Model/subCategoryModel");
 const offer = require('../Model/offerModel')
@@ -63,6 +64,8 @@ exports.createRecommendeYoutube = async (req, res) => {
                         let fileUrl;
                         if (req.file) {
                                 fileUrl = req.file ? req.file.path : "";
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
                         }
                         const data = {
                                 link: req.body.link,
@@ -130,6 +133,8 @@ exports.addStore = async (req, res) => {
                 } else {
                         if (req.file) {
                                 req.body.storeImage = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
                         }
                         let saveStore = await storeModel(req.body).save();
                         if (saveStore) {
@@ -215,6 +220,8 @@ exports.AddBanner = async (req, res) => {
                 } else {
                         if (req.file) {
                                 req.body.image = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
                         }
                         const data = { name: req.body.name, image: req.body.image, link: req.body.link };
                         const banner = await Banner.create(data);
@@ -278,6 +285,8 @@ exports.AddOffer = async (req, res) => {
                 } else {
                         if (req.file) {
                                 req.body.image = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
                         }
                         const data = { name: req.body.name, image: req.body.image, link: req.body.link };
                         const updateOffer = await offer.create(data);
@@ -341,6 +350,8 @@ exports.createCategory = async (req, res) => {
                 } else {
                         if (req.file) {
                                 req.body.image = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
                         }
                         const data = { name: req.body.name, image: req.body.image };
                         const category = await Category.create(data);
@@ -470,5 +481,65 @@ exports.getSubcategoryByCategory = async (req, res) => {
                 }
         } catch (error) {
                 return res.status(500).json({ success: false, error: 'Internal server error' });
+        }
+};
+exports.createBrand = async (req, res) => {
+        try {
+                let findBrand = await Brand.findOne({ name: req.body.name });
+                if (findBrand) {
+                        return res.status(409).json({ message: "Brand already exit.", status: 404, data: {} });
+                } else {
+                        if (req.file) {
+                                req.body.image = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
+                        }
+                        const data = { name: req.body.name, image: req.body.image };
+                        const brand = await Brand.create(data);
+                        return res.status(200).json({ message: "Brand add successfully.", status: 200, data: brand });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getBrand = async (req, res) => {
+        try {
+                const brand = await Brand.find({});
+                return res.status(201).json({ success: true, brand, });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.updateBrand = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const brand = await Brand.findById(id);
+                if (!brand) {
+                        return res.status(404).json({ message: "Brand Not Found", status: 404, data: {} });
+                }
+                if (req.file) {
+                        brand.image = req.file.path;
+                } else {
+                        brand.image = brand.image;
+                }
+                brand.name = req.body.name;
+                let update = await brand.save();
+                return res.status(200).json({ message: "Updated Successfully", status: 200, data: update });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.removeBrand = async (req, res) => {
+        const { id } = req.params;
+        try {
+                const brand = await Brand.findById(id);
+                if (!brand) {
+                        return res.status(404).json({ message: "Brand Not Found", status: 404, data: {} });
+                } else {
+                        await Brand.findByIdAndDelete(brand._id);
+                        return res.status(200).json({ message: "Brand Deleted Successfully !" });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
         }
 };

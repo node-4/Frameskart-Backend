@@ -31,4 +31,8 @@ module.exports = (app) => {
         app.put("/api/v1/subcategory/updatesubcategory/:id", [authJwt.verifyToken], auth.updateSubcategory);
         app.delete("/api/v1/subcategory/removesubcategory/:id", [authJwt.verifyToken], auth.removeSubcategory);
         app.get("/api/v1/subcategory/subcategory/:categoryId", auth.getSubcategoryByCategory);
+        app.post("/api/v1/brand/createBrand", upload.single('image'), [authJwt.verifyToken], auth.createBrand);
+        app.get("/api/v1/brand/allBrand", auth.getBrand);
+        app.put("/api/v1/brand/updateBrand/:id", upload.single('image'), [authJwt.verifyToken], auth.updateBrand);
+        app.delete("/api/v1/brand/removeBrand/:id", [authJwt.verifyToken], auth.removeBrand)
 }
