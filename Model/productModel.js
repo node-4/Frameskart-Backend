@@ -17,17 +17,10 @@ const productSchema = mongoose.Schema({
   description: {
     type: String,
   },
-  type: {
-    type: String,
-        enum: ["Sunglasses", "Computer Glass", "Premium", "App"],
-        required: true,
-},
-
   images: {
     type: [String],
     required: true,
   },
-
   category: {
     type: String,
     type: mongoose.Schema.ObjectId,
@@ -37,6 +30,31 @@ const productSchema = mongoose.Schema({
     type: String,
     type: mongoose.Schema.ObjectId,
     ref: "Subcategory",
+  },
+  color: {
+    type: String,
+    type: mongoose.Schema.ObjectId,
+    ref: "colorGender",
+  },
+  gender: {
+    type: String,
+    type: mongoose.Schema.ObjectId,
+    ref: "colorGender",
+  },
+  brand: {
+    type: String,
+    type: mongoose.Schema.ObjectId,
+    ref: "Brand",
+  },
+  shape: {
+    type: String,
+    type: mongoose.Schema.ObjectId,
+    ref: "shape",
+  },
+  style: {
+    type: String,
+    type: mongoose.Schema.ObjectId,
+    ref: "shape",
   },
   stock: {
     type: Number,
@@ -68,8 +86,8 @@ const productSchema = mongoose.Schema({
       },
     },
   ],
- 
-},{ timestamps: true });
+
+}, { timestamps: true });
 // productSchema.plugin(mongoosePaginate);
 // productSchema.plugin(mongooseAggregatePaginate);
 

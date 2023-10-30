@@ -616,7 +616,7 @@ exports.removeColorGender = async (req, res) => {
 };
 exports.AddShape = async (req, res) => {
         try {
-                let findShape = await shape.findOne({ name: req.body.name });
+                let findShape = await shape.findOne({ name: req.body.name, type: "shape" });
                 if (findShape) {
                         return res.status(409).json({ message: "Shape already exit.", status: 404, data: {} });
                 } else {
@@ -626,7 +626,7 @@ exports.AddShape = async (req, res) => {
                         } else {
                                 return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
                         }
-                        const data = { name: req.body.name, image: req.body.image };
+                        const data = { name: req.body.name, image: req.body.image, type: "shape" };
                         const shape1 = await shape.create(data);
                         return res.status(200).json({ message: "Shape add successfully.", status: 200, data: shape1 });
                 }
@@ -636,7 +636,7 @@ exports.AddShape = async (req, res) => {
 };
 exports.getShape = async (req, res) => {
         try {
-                const findShape = await shape.find();
+                const findShape = await shape.find({ type: "shape" });
                 if (findShape.length > 0) {
                         return res.status(200).json({ success: true, data: findShape });
                 } else {
@@ -659,6 +659,7 @@ exports.updateShape = async (req, res) => {
                         findShape.image = shape.image;
                 }
                 findShape.name = req.body.name || findShape.name;
+                findShape.type = findShape.type;
                 let update = await findShape.save();
                 return res.status(200).json({ message: "Updated Successfully", status: 200, data: update });
         } catch (error) {
@@ -679,6 +680,72 @@ exports.removeShape = async (req, res) => {
                 return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
         }
 };
+exports.AddStyle = async (req, res) => {
+        try {
+                let findShape = await shape.findOne({ name: req.body.name, type: "style" });
+                if (findShape) {
+                        return res.status(409).json({ message: "style already exit.", status: 404, data: {} });
+                } else {
+                        if (req.file) {
+                                console.log(req.file);
+                                req.body.image = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
+                        }
+                        const data = { name: req.body.name, image: req.body.image, type: "style" };
+                        const shape1 = await shape.create(data);
+                        return res.status(200).json({ message: "style add successfully.", status: 200, data: shape1 });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getStyle = async (req, res) => {
+        try {
+                const findShape = await shape.find({ type: "style" });
+                if (findShape.length > 0) {
+                        return res.status(200).json({ success: true, data: findShape });
+                } else {
+                        return res.status(404).json({ message: "style not found.", status: 200, data: {} });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.updateStyle = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const findShape = await shape.findById(id);
+                if (!findShape) {
+                        return res.status(404).json({ message: "style Not Found", status: 404, data: {} });
+                }
+                if (req.file) {
+                        findShape.image = req.file.path
+                } else {
+                        findShape.image = shape.image;
+                }
+                findShape.name = req.body.name || findShape.name;
+                findShape.type = findShape.type;
+                let update = await findShape.save();
+                return res.status(200).json({ message: "Updated Successfully", status: 200, data: update });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.removeStyle = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const findShape = await shape.findById(id);
+                if (!findShape) {
+                        return res.status(404).json({ message: "style Not Found", status: 404, data: {} });
+                } else {
+                        await shape.findByIdAndDelete(findShape._id);
+                        return res.status(200).json({ message: "style Deleted Successfully !" });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
 exports.createAccessories = async (req, res) => {
         try {
                 let findAccessories = await accessories.findOne({ name: req.body.name });
@@ -686,7 +753,6 @@ exports.createAccessories = async (req, res) => {
                         return res.status(409).json({ message: "Accessories already exit.", status: 404, data: {} });
                 } else {
                         if (req.file) {
-                                console.log(req.file);
                                 req.body.image = req.file.path
                         } else {
                                 return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });

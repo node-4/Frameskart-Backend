@@ -44,6 +44,10 @@ module.exports = (app) => {
         app.get("/api/v1/admin/Shape/allShape", auth.getShape);
         app.put("/api/v1/admin/Shape/updateShape/:id", [authJwt.verifyToken], upload.single('image'), auth.updateShape);
         app.delete("/api/v1/admin/Shape/deleteShape/:id", [authJwt.verifyToken], auth.removeShape);
+        app.post("/api/v1/admin/Style/AddStyle", [authJwt.verifyToken], upload.single('image'), auth.AddStyle);
+        app.get("/api/v1/admin/Style/allStyle", auth.getStyle);
+        app.put("/api/v1/admin/Style/updateStyle/:id", [authJwt.verifyToken], upload.single('image'), auth.updateStyle);
+        app.delete("/api/v1/admin/Style/deleteStyle/:id", [authJwt.verifyToken], auth.removeStyle);
         app.post("/api/v1/admin/accessories/createAccessories", [authJwt.verifyToken], upload.single('image'), auth.createAccessories);
         app.get("/api/v1/admin/accessories/allAccessories", auth.getAccessories);
         app.put("/api/v1/admin/accessories/updateAccessories/:id", [authJwt.verifyToken], upload.single('image'), auth.updateAccessories);

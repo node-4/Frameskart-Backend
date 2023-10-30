@@ -7,9 +7,13 @@ const bannerSchema = new mongoose.Schema({
     image: {
         type: String
     },
+    type: {
+        type: String,
+        enum: ["shape", "style"],
+    },
 },
     { timestamps: true }
 
 );
 
-module.exports = mongoose.model("shape", bannerSchema);
+module.exports = mongoose.model("shapeStyle", bannerSchema);
