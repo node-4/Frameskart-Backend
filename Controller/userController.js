@@ -4,6 +4,7 @@ const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
 const randomatic = require("randomatic");
 const User = require("../Model/userModel");
+const feedback = require("../Model/feedback");
 
 exports.socialLogin = async (req, res) => {
   try {
@@ -94,12 +95,54 @@ exports.getUserDetails = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
-      res.status(404).send({ status: 404, message: "user not found ", data: {}, });
+      return res.status(404).send({ status: 404, message: "user not found ", data: {}, });
     } else {
-      res.status(200).send({ status: 200, message: "get profile ", data: user, });
+      return res.status(200).send({ status: 200, message: "get profile ", data: user, });
     }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+exports.giveFeedback = async (req, res) => {
+  try {
+    let { feedBack, } = req.body;
+    const userData = await User.findById({ _id: req.user._id });
+    if (!userData) {
+      return res.status(404).send({ status: 404, message: "user not found ", data: {}, });
+    } else {
+      const data = { userId: req.user._id, feedBack: feedBack, }
+      const NewUserFeedback = await feedback.create(data);
+      if (NewUserFeedback) {
+        return res.status(200).json({ message: "UserFeedback Send", data: NewUserFeedback, status: true, });
+      }
+    }
+  } catch (error) {
+    return res.status(400).json({ message: error.message, status: false });
+  }
+};
+exports.GetAllFeedBack = async (req, res) => {
+  try {
+    const data = await feedback.find();
+    if (data.length == 0) {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+    return res.status(200).json({ status: 200, message: "feedback retrieved successfully ", data: data });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+}
+exports.GetFeedbackById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const faq = await feedback.findById(id);
+    if (!faq) {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+    return res.status(200).json({ status: 200, message: "feedback retrieved successfully ", data: faq });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
   }
 };

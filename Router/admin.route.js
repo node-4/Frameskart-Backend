@@ -52,4 +52,21 @@ module.exports = (app) => {
         app.get("/api/v1/admin/accessories/allAccessories", auth.getAccessories);
         app.put("/api/v1/admin/accessories/updateAccessories/:id", [authJwt.verifyToken], upload.single('image'), auth.updateAccessories);
         app.delete("/api/v1/admin/accessories/removeAccessories/:id", [authJwt.verifyToken], auth.removeAccessories)
+        app.post("/api/v1/ContactDetails/add", [authJwt.verifyToken], upload.single('image'), auth.addContactDetails);
+        app.get("/api/v1/admin/ContactDetails/view", auth.viewContactDetails);
+        app.post("/api/v1/admin/createAboutUs", upload.single('image'), [authJwt.verifyToken], auth.createAboutUs);
+        app.get("/api/v1/admin/getAllAboutUs", auth.getAllAboutUs);
+        app.get("/api/v1/admin/getAboutUsById/:id", auth.getAboutUsById);
+        app.delete("/api/v1/admin/deleteAboutUs/:id", [authJwt.verifyToken], auth.deleteAboutUs);
+        app.put("/api/v1/admin/addUserinAboutUs", upload.single('image'), [authJwt.verifyToken], auth.addUserinAboutUs);
+        app.delete("/api/v1/admin/deleteUserinAboutUs/:id", [authJwt.verifyToken], auth.deleteUserinAboutUs);
+        app.post("/api/v1/static/faq/createFaq", authJwt.verifyToken, auth.createFaq);
+        app.put("/api/v1/static/faq/:id", authJwt.verifyToken, auth.updateFaq);
+        app.delete("/api/v1/static/faq/:id", authJwt.verifyToken, auth.deleteFaq);
+        app.get("/api/v1/static/faq/All", auth.getAllFaqs);
+        app.get("/api/v1/static/faq/:id", auth.getFaqById); 
+        app.post("/api/v1/admin/createPremiumLenses", upload.single('image'), [authJwt.verifyToken], auth.createPremiumLenses);
+        app.get("/api/v1/admin/getAllPremiumLenses", auth.getAllPremiumLenses);
+        app.get("/api/v1/admin/getPremiumLensesById/:id", auth.getPremiumLensesById);
+        app.delete("/api/v1/admin/deletePremiumLenses/:id", [authJwt.verifyToken], auth.deletePremiumLenses);
 }

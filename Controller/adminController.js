@@ -7,9 +7,14 @@ const Subcategory = require("../Model/subCategoryModel");
 const offer = require('../Model/offerModel')
 const accessories = require('../Model/accessoriesModel')
 const recommendeYoutube = require("../Model/recommende&youtubeCornerByBanner");
+const ContactDetail = require("../Model/contactDetails");
+const static = require("../Model/static");
 const colorGender = require("../Model/colorGender");
+const premiumLenses = require("../Model/premiumLenses");
+const eyeTestCamp = require("../Model/eyeTestCamp");
 const shape = require("../Model/shape");
 const bcrypt = require("bcryptjs");
+const Faq = require('../Model/faq')
 const jwt = require("jsonwebtoken");
 exports.registration = async (req, res) => {
         const { mobileNumber, email } = req.body;
@@ -809,5 +814,307 @@ exports.removeAccessories = async (req, res) => {
                 }
         } catch (error) {
                 return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.addContactDetails = async (req, res) => {
+        try {
+                console.log(req.body);
+                let findcontactDetails = await ContactDetail.findOne({});
+                if (findcontactDetails) {
+                        if (req.file) {
+                                req.body.image = req.file.path
+                        } else {
+                                req.body.image = findcontactDetails.image
+                        }
+                        req.body.title = req.body.title || findcontactDetails.title;
+                        req.body.description = req.body.description || findcontactDetails.description;
+                        req.body.fb = req.body.fb || findcontactDetails.fb;
+                        req.body.instagram = req.body.instagram || findcontactDetails.instagram;
+                        req.body.linkedIn = req.body.linkedIn || findcontactDetails.linkedIn;
+                        req.body.twitter = req.body.twitter || findcontactDetails.twitter;
+                        req.body.map = req.body.map || findcontactDetails.map;
+                        req.body.mobileNumber = req.body.mobileNumber || findcontactDetails.mobileNumber;
+                        req.body.mobileNumberDescription = req.body.mobileNumberDescription || findcontactDetails.mobileNumberDescription;
+                        req.body.email = req.body.email || findcontactDetails.email;
+                        req.body.emailDescription = req.body.emailDescription || findcontactDetails.emailDescription;
+                        req.body.whatAppchat = req.body.whatAppchat || findcontactDetails.whatAppchat;
+                        req.body.whatAppchatDescription = req.body.whatAppchatDescription || findcontactDetails.whatAppchatDescription;
+                        let updateContact = await ContactDetail.findByIdAndUpdate({ _id: findcontactDetails._id }, { $set: req.body }, { new: true });
+                        if (updateContact) {
+                                return res.status(200).send({ status: 200, message: "Contact Detail update successfully", data: updateContact });
+                        }
+                } else {
+                        if (req.file) {
+                                req.body.image = req.file.path
+                        }
+                        console.log(req.body);
+                        let result2 = await ContactDetail.create(req.body);
+                        if (result2) {
+                                return res.status(200).send({ status: 200, message: "Contact Detail update successfully", data: result2 });
+                        }
+                }
+        } catch (err) {
+                console.log(err.message);
+                return res.status(500).send({ status: 500, msg: "internal server error", error: err.message, });
+        }
+};
+exports.viewContactDetails = async (req, res) => {
+        try {
+                let findcontactDetails = await ContactDetail.findOne({});
+                if (!findcontactDetails) {
+                        return res.status(404).send({ status: 404, message: "Contact Detail not found.", data: {} });
+                } else {
+                        return res.status(200).send({ status: 200, message: "Contact Detail fetch successfully", data: findcontactDetails });
+                }
+        } catch (err) {
+                console.log(err);
+                return res.status(500).send({ status: 500, msg: "internal server error", error: err.message, });
+        }
+};
+exports.createAboutUs = async (req, res) => {
+        try {
+                const { title, description, image, meetTheLeader, productDescription, products } = req.body;
+                let findBanner = await static.findOne({ type: "ABOUTUS" });
+                if (findBanner) {
+                        if (req.file) {
+                                req.body.image = req.file.path;
+                        }
+                        let data = {
+                                title: title || findData.title,
+                                image: req.body.image || findData.image,
+                                productDescription: productDescription || findData.productDescription,
+                                description: description || findData.description,
+                                products: products || findData.products,
+                                meetTheLeader: meetTheLeader || findData.meetTheLeader,
+                                type: "ABOUTUS",
+                        }
+                        const newCategory = await static.findByIdAndUpdate({ _id: findBanner._id }, { $set: data }, { new: true });
+                        return res.status(200).json({ status: 200, message: 'About us update successfully', data: newCategory });
+                } else {
+                        if (req.file) {
+                                req.body.image = req.file.path;
+                        }
+                        req.body.type = "ABOUTUS";
+                        const newCategory = await static.create(req.body);
+                        return res.status(200).json({ status: 200, message: 'About us created successfully', data: newCategory });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Failed to create About us' });
+        }
+};
+exports.getAboutUsById = async (req, res) => {
+        try {
+                const bannerId = req.params.id;
+                const user = await static.findById(bannerId);
+                if (user) {
+                        return res.status(201).json({ message: "About us found successfully", status: 200, data: user, });
+                }
+                return res.status(201).json({ message: "About us not Found", status: 404, data: {}, });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: "Failed to retrieve Banner" });
+        }
+};
+exports.deleteAboutUs = async (req, res) => {
+        try {
+                const bannerId = req.params.id;
+                const user = await static.findById(bannerId);
+                if (user) {
+                        const user1 = await static.findByIdAndDelete({ _id: user._id });;
+                        if (user1) {
+                                return res.status(201).json({ message: "About us delete successfully.", status: 200, data: {}, });
+                        }
+                } else {
+                        return res.status(201).json({ message: "About us not Found", status: 404, data: {}, });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: "Failed to retrieve About us" });
+        }
+};
+exports.getAllAboutUs = async (req, res) => {
+        try {
+                const categories = await static.findOne();
+                if (categories) {
+                        return res.status(200).json({ status: 200, message: 'About us found successfully', data: categories });
+                } else {
+                        return res.status(404).json({ status: 404, message: 'About us not found.', data: categories });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Failed to fetch About us' });
+        }
+};
+exports.addUserinAboutUs = async (req, res) => {
+        try {
+                const { degination, title, image } = req.body;
+                let findBanner = await static.findOne({});
+                if (findBanner) {
+                        if (req.file) {
+                                req.body.image = req.file.path;
+                        }
+                        let data = {
+                                title: title,
+                                degination: degination,
+                                image: req.body.image
+                        }
+                        const newCategory = await static.findByIdAndUpdate({ _id: findBanner._id }, { $push: { meetLeader: data } }, { new: true });
+                        return res.status(200).json({ status: 200, message: 'About us update successfully', data: newCategory });
+                } else {
+                        return res.status(200).json({ status: 200, message: 'About us not found.', data: {} });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Failed to create About us' });
+        }
+};
+exports.deleteUserinAboutUs = async (req, res) => {
+        try {
+                let findCart = await static.findOne({});
+                if (findCart) {
+                        for (let i = 0; i < findCart.userArray.length; i++) {
+                                if (findCart.userArray.length > 1) {
+                                        if (((findCart.userArray[i]._id).toString() == req.params.id) == true) {
+                                                let updateCart = await static.findByIdAndUpdate({ _id: findCart._id, 'userArray._id': req.params.id }, { $pull: { 'userArray': { _id: req.params.id, name: findCart.userArray[i].name, image: findCart.userArray[i].image, } } }, { new: true })
+                                                if (updateCart) {
+                                                        return res.status(200).send({ message: "User delete from bussiness we support.", data: updateCart, });
+                                                }
+                                        }
+                                } else {
+                                        return res.status(200).send({ status: 200, message: "No Data Found ", data: [] });
+                                }
+                        }
+                } else {
+                        return res.status(200).send({ status: 200, message: "No Data Found ", cart: [] });
+                }
+
+        } catch (error) {
+                console.log("353====================>", error)
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.createFaq = async (req, res) => {
+        const { question, answer } = req.body;
+        try {
+                if (!question || !answer) {
+                        return res.status(400).json({ message: "questions and answers cannot be blank " });
+                }
+                const faq = await Faq.create(req.body);
+                return res.status(200).json({ status: 200, message: "FAQ Added Successfully ", data: faq });
+        } catch (err) {
+                console.log(err);
+                return res.status(500).json({ message: "Error ", status: 500, data: err.message });
+        }
+};
+exports.getFaqById = async (req, res) => {
+        const { id } = req.params;
+        try {
+                const faq = await Faq.findById(id);
+                if (!faq) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "faqs retrieved successfully ", data: faq });
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.updateFaq = async (req, res) => {
+        const { id } = req.params;
+        try {
+                const faq = await Faq.findByIdAndUpdate(id, req.body, { new: true });
+                if (!faq) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "update successfully.", data: faq });
+        } catch (err) {
+                console.log(err);
+                return res.status(500).json({ message: "Something went wrong ", status: 500, data: err.message });
+        }
+};
+exports.deleteFaq = async (req, res) => {
+        const { id } = req.params;
+        try {
+                const faq = await Faq.findByIdAndDelete(id);
+                if (!faq) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "FAQ Deleted Successfully ", data: faq });
+        } catch (err) {
+                console.log(err);
+                return res.status(500).json({ message: "Something went wrong ", status: 500, data: err.message });
+        }
+};
+exports.getAllFaqs = async (req, res) => {
+        try {
+                const faqs = await Faq.find({}).lean();
+                if (faqs.length == 0) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "faqs retrieved successfully ", data: faqs });
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.createPremiumLenses = async (req, res) => {
+        try {
+                const { name, description, image } = req.body;
+                let findBanner = await premiumLenses.findOne({ name: name});
+                if (findBanner) {
+                       return res.status(200).json({ status: 200, message: 'Premium Lenses already exit', data: findBanner });
+                } 
+                if (req.file) {
+                        req.body.image = req.file.path;
+                }
+                const newCategory = await premiumLenses.create(req.body);
+                return res.status(200).json({ status: 200, message: 'Premium Lenses created successfully', data: newCategory });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Failed to create Premium Lenses' });
+        }
+};
+exports.getPremiumLensesById = async (req, res) => {
+        try {
+                const bannerId = req.params.id;
+                const user = await premiumLenses.findById(bannerId);
+                if (user) {
+                        return res.status(201).json({ message: "Premium Lenses found successfully", status: 200, data: user, });
+                }
+                return res.status(201).json({ message: "Premium Lenses not Found", status: 404, data: {}, });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: "Failed to retrieve premiumLenses" });
+        }
+};
+exports.deletePremiumLenses = async (req, res) => {
+        try {
+                const bannerId = req.params.id;
+                const user = await premiumLenses.findById(bannerId);
+                if (user) {
+                        const user1 = await premiumLenses.findByIdAndDelete({ _id: user._id });;
+                        if (user1) {
+                                return res.status(201).json({ message: "Premium Lenses delete successfully.", status: 200, data: {}, });
+                        }
+                } else {
+                        return res.status(201).json({ message: "Premium Lenses not Found", status: 404, data: {}, });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: "Failed to retrieve Premium Lenses" });
+        }
+};
+exports.getAllPremiumLenses = async (req, res) => {
+        try {
+                const categories = await premiumLenses.findOne();
+                if (categories) {
+                        return res.status(200).json({ status: 200, message: 'Premium Lenses found successfully', data: categories });
+                } else {
+                        return res.status(404).json({ status: 404, message: 'Premium Lenses not found.', data: categories });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Failed to fetch Premium Lenses' });
         }
 };
