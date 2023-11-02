@@ -9,15 +9,12 @@ const faqSchema = new mongoose.Schema(
         },
         totalCamp: {
             type: Number,
-            default: 0
         },
         totalTest: {
             type: Number,
-            default: 0
         },
         applicationTitle: {
-            type: Number,
-            default: 0
+            type: String,
         },
         applicationDescription: {
             type: Array,

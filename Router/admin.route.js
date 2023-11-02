@@ -1,5 +1,5 @@
 const auth = require("../Controller/adminController");
-const { upload, productUpload } = require('../middleware/imageupload')
+const { upload, FranchiseUpload, productUpload } = require('../middleware/imageupload')
 const authJwt = require("../middleware/authJwt");
 module.exports = (app) => {
         app.post("/api/v1/admin/registration", auth.registration);
@@ -69,4 +69,22 @@ module.exports = (app) => {
         app.get("/api/v1/admin/getAllPremiumLenses", auth.getAllPremiumLenses);
         app.get("/api/v1/admin/getPremiumLensesById/:id", auth.getPremiumLensesById);
         app.delete("/api/v1/admin/deletePremiumLenses/:id", [authJwt.verifyToken], auth.deletePremiumLenses);
+        app.post("/api/v1/admin/createEyeTestCamp", upload.array('image'), [authJwt.verifyToken], auth.createEyeTestCamp);
+        app.get("/api/v1/admin/getAllEyeTestCamp", auth.getAllEyeTestCamp);
+        app.get("/api/v1/admin/getEyeTestCampById/:id", auth.getEyeTestCampById);
+        app.delete("/api/v1/admin/deleteEyeTestCamp/:id", [authJwt.verifyToken], auth.deleteEyeTestCamp);
+        app.get("/api/v1/admin/getAllEyeTestCampFormData", auth.getAllEyeTestCampFormData);
+        app.post("/api/v1/admin/FranchiseTestimonial/addFranchiseTestimonial", [authJwt.verifyToken], upload.single('image'), auth.createFranchiseTestimonial);
+        app.get("/api/v1/admin/FranchiseTestimonial/allFranchiseTestimonial", auth.getFranchiseTestimonial);
+        app.put("/api/v1/admin/FranchiseTestimonial/updateFranchiseTestimonial/:id", [authJwt.verifyToken], upload.single('image'), auth.updateFranchiseTestimonial);
+        app.delete("/api/v1/admin/FranchiseTestimonial/deleteFranchiseTestimonial/:id", [authJwt.verifyToken], auth.removeFranchiseTestimonial);
+        app.get("/api/v1/admin/getAllFranchiseInquiryData", auth.getAllFranchiseInquiryData);
+        app.post("/api/v1/admin/addFranchise", FranchiseUpload, [authJwt.verifyToken], auth.addFranchise);
+        app.get("/api/v1/admin/getFranchise", auth.getFranchise);
+        app.get("/api/v1/admin/getFranchiseById/:id", auth.getFranchiseById);
+        app.delete("/api/v1/admin/DeleteFranchise/:id", [authJwt.verifyToken], auth.DeleteFranchise);
+        app.post("/api/v1/admin/createProduct", productUpload, [authJwt.verifyToken], auth.createProduct);
+        app.get("/api/v1/admin/getProducts", auth.getProducts);
+        app.get("/api/v1/admin/getProductsbyid/:id", auth.getProductDetails);
+        app.delete("/api/v1/admin/deleteProducts/:id", [authJwt.verifyToken], auth.deleteProducts);
 }

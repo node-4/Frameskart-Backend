@@ -6,7 +6,7 @@ const {
     getbyCategory
   } = require("../Controller/subCategoryController");
 
-  const authJwt = require("../middleware/authJwt");
+  const authJwt = require("../../middleware/authJwt");
   const router = require("express").Router();
   
  router.route("/createsubcategory").post(createSubcategory);

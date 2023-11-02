@@ -5,7 +5,7 @@ const {
     removeSeries,
   } = require("../Controller/seriesController");
   
-  const authJwt = require("../middleware/authJwt");
+  const authJwt = require("../../middleware/authJwt");
   // const auth = require("../middleware/authSeller");
   const router = require("express").Router();
   

@@ -5,7 +5,12 @@ const jwt = require("jsonwebtoken");
 const randomatic = require("randomatic");
 const User = require("../Model/userModel");
 const feedback = require("../Model/feedback");
-
+const eyeTestCamp = require("../Model/eyeTestCamp");
+const franchiseInquiry = require("../Model/FranchiseRegistration/franchiseInquiry");
+const franchise = require("../Model/FranchiseRegistration/franchise");
+const franchiseTestimonial = require("../Model/FranchiseRegistration/franchiseTestimonial");
+const product = require('../Model/productModel');
+const Wishlist = require("../Model/whishList");
 exports.socialLogin = async (req, res) => {
   try {
     let userData = await User.findOne({ $or: [{ mobileNumber: req.body.mobileNumber }, { socialId: req.body.socialId }, { socialType: req.body.socialType }] });
@@ -101,7 +106,7 @@ exports.getUserDetails = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 exports.giveFeedback = async (req, res) => {
@@ -144,5 +149,98 @@ exports.GetFeedbackById = async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.applyforEyeTestCamp = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).send({ status: 404, message: "user not found ", data: {}, });
+    } else {
+      req.body.type = "form";
+      let saveUser = await eyeTestCamp(req.body).save();
+      if (saveUser) {
+        return res.status(200).send({ status: 200, message: "Request send for eyeTest camp ", data: saveUser, });
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+exports.applyforFranchiseInquiry = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).send({ status: 404, message: "user not found ", data: {}, });
+    } else {
+      let saveUser = await franchiseInquiry(req.body).save();
+      if (saveUser) {
+        return res.status(200).send({ status: 200, message: "Request send for franchiseInquiry ", data: saveUser, });
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+exports.createWishlist = async (req, res, next) => {
+  try {
+          const productId = req.params.id;
+          const viewProduct = await product.findById(productId);
+          let wishList = await Wishlist.findOne({ user: req.user._id });
+          if (!wishList) {
+                  wishList = new Wishlist({ user: req.user._id, });
+          }
+          wishList.products.addToSet(productId);
+          viewProduct.Wishlistuser.addToSet(req.user._id);
+          await wishList.save();
+          await viewProduct.save();
+          return res.status(200).json({ status: 200, message: "product add to wishlist Successfully", });
+  } catch (error) {
+          console.log(error);
+          return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.removeFromWishlist = async (req, res, next) => {
+  try {
+          const wishlist = await Wishlist.findOne({ user: req.user._id });
+          if (!wishlist) {
+                  return res.status(404).json({ message: "Wishlist not found", status: 404 });
+          }
+          const productId = req.params.id;
+          const viewProduct = await product.findById(productId);
+          wishlist.products.pull(productId);
+          viewProduct.Wishlistuser.pull(req.user._id);
+          await wishlist.save();
+          await viewProduct.save();
+          return res.status(200).json({ status: 200, message: "Removed From Wishlist", });
+  } catch (error) {
+          console.log(error);
+          return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.myWishlist = async (req, res, next) => {
+  try {
+          let myList = await Wishlist.findOne({ user: req.user._id }).populate('products');
+          if (!myList) {
+                  myList = await Wishlist.create({ user: req.user._id });
+          }
+          let array = []
+          for (let i = 0; i < myList.products.length; i++) {
+                  const data = await product.findById(myList.products[i]._id).populate('categoryId subcategoryId').populate('colors')
+                  array.push(data)
+          }
+          let obj = {
+                  _id: myList._id,
+                  user: myList.user,
+                  products: array,
+                  __v: myList.__v
+          }
+
+          return res.status(200).json({ status: 200, wishlist: obj, });
+  } catch (error) {
+          console.log(error);
+          return res.status(501).send({ status: 501, message: "server error.", data: {}, });
   }
 };

@@ -1,25 +1,76 @@
 const mongoose = require("mongoose");
-// const mongoosePaginate = require("mongoose-paginate");
-// const mongooseAggregatePaginate = require("mongoose-aggregate-paginate");
+const mongoosePaginate = require("mongoose-paginate");
+const mongooseAggregatePaginate = require("mongoose-aggregate-paginate");
 
 const productSchema = mongoose.Schema({
+  freeShipping: {
+    type: Boolean,
+    default: false
+  },
+  images: {
+    type: [String],
+    required: true,
+  },
   name: {
     type: String,
     required: true,
   },
-  quantity: {
-    type: Number,
-  },
-  price: {
-    type: Number,
+  productId: {
+    type: String,
     required: true,
   },
   description: {
     type: String,
   },
-  images: {
-    type: [String],
-    required: true,
+  rating: {
+    type: Number,
+    default: 0,
+  },
+  numOfReviews: {
+    type: Number,
+    default: 0,
+  },
+  reviews: [
+    {
+      user: {
+        type: mongoose.Schema.ObjectId,
+        ref: "User",
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      rating: {
+        type: Number,
+        required: true,
+      },
+      comment: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
+  pricewithlense: {
+    type: Number,
+  },
+  size: {
+    type: Array,
+  },
+  soldPrice: {
+    type: Number,
+  },
+  features: {
+    type: String,
+  },
+  featuresImage: {
+    type: Array,
+  },
+  specification: {
+    type: Array,
+  },
+  descriptionArray: {
+    type: Array,
   },
   category: {
     type: String,
@@ -61,34 +112,8 @@ const productSchema = mongoose.Schema({
     required: ["Please Enter Stock"],
     default: 1,
   },
-  numOfReviews: {
-    type: Number,
-    default: 0,
-  },
-  reviews: [
-    {
-      user: {
-        type: mongoose.Schema.ObjectId,
-        ref: "User",
-        required: true,
-      },
-      name: {
-        type: String,
-        required: true,
-      },
-      rating: {
-        type: Number,
-        required: true,
-      },
-      comment: {
-        type: String,
-        required: true,
-      },
-    },
-  ],
-
 }, { timestamps: true });
-// productSchema.plugin(mongoosePaginate);
-// productSchema.plugin(mongooseAggregatePaginate);
+productSchema.plugin(mongoosePaginate);
+productSchema.plugin(mongooseAggregatePaginate);
 
 module.exports = mongoose.model("Product", productSchema);

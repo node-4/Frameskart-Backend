@@ -12,6 +12,10 @@ const static = require("../Model/static");
 const colorGender = require("../Model/colorGender");
 const premiumLenses = require("../Model/premiumLenses");
 const eyeTestCamp = require("../Model/eyeTestCamp");
+const franchiseInquiry = require("../Model/FranchiseRegistration/franchiseInquiry");
+const franchise = require("../Model/FranchiseRegistration/franchise");
+const franchiseTestimonial = require("../Model/FranchiseRegistration/franchiseTestimonial");
+const productModel = require("../Model/productModel");
 const shape = require("../Model/shape");
 const bcrypt = require("bcryptjs");
 const Faq = require('../Model/faq')
@@ -1061,10 +1065,10 @@ exports.getAllFaqs = async (req, res) => {
 exports.createPremiumLenses = async (req, res) => {
         try {
                 const { name, description, image } = req.body;
-                let findBanner = await premiumLenses.findOne({ name: name});
+                let findBanner = await premiumLenses.findOne({ name: name });
                 if (findBanner) {
-                       return res.status(200).json({ status: 200, message: 'Premium Lenses already exit', data: findBanner });
-                } 
+                        return res.status(200).json({ status: 200, message: 'Premium Lenses already exit', data: findBanner });
+                }
                 if (req.file) {
                         req.body.image = req.file.path;
                 }
@@ -1111,10 +1115,345 @@ exports.getAllPremiumLenses = async (req, res) => {
                 if (categories) {
                         return res.status(200).json({ status: 200, message: 'Premium Lenses found successfully', data: categories });
                 } else {
-                        return res.status(404).json({ status: 404, message: 'Premium Lenses not found.', data: categories });
+                        return res.status(404).json({ status: 404, message: 'Premium Lenses not found.', data: {} });
                 }
         } catch (error) {
                 console.error(error);
                 return res.status(500).json({ error: 'Failed to fetch Premium Lenses' });
         }
 };
+exports.createEyeTestCamp = async (req, res) => {
+        try {
+                const { applicationTitle, totalCamp, totalTest, description, image, applicationDescription } = req.body;
+                let findBanner = await eyeTestCamp.findOne({ type: "Data" });
+                if (findBanner) {
+                        let image1 = [], image;
+                        if (req.files) {
+                                for (let i = 0; i < req.files.length; i++) {
+                                        image1.push(req.files[i].path)
+                                }
+                        }
+                        if (image1.length == 0) {
+                                image = findBanner.image;
+                        } else {
+                                image = image1;
+                        }
+                        let obj = {
+                                image: image,
+                                description: description,
+                                totalCamp: totalCamp,
+                                totalTest: totalTest,
+                                applicationTitle: applicationTitle,
+                                applicationDescription: applicationDescription,
+                        }
+                        const faq = await eyeTestCamp.findByIdAndUpdate(findBanner._id, { $set: obj }, { new: true });
+                        return res.status(200).json({ status: 200, message: 'Eye Test Camp created successfully', data: faq });
+                } else {
+                        let image = [];
+                        if (req.files) {
+                                for (let i = 0; i < req.files.length; i++) {
+                                        image.push(req.files[i].path)
+                                }
+                        }
+                        req.body.image = image;
+                        req.body.type = "Data";
+                        const newCategory = await eyeTestCamp.create(req.body);
+                        return res.status(200).json({ status: 200, message: 'Eye Test Camp created successfully', data: newCategory });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Failed to create Eye Test Camp' });
+        }
+};
+exports.getEyeTestCampById = async (req, res) => {
+        try {
+                const bannerId = req.params.id;
+                const user = await eyeTestCamp.findById(bannerId);
+                if (user) {
+                        return res.status(201).json({ message: "Eye Test Camp found successfully", status: 200, data: user, });
+                }
+                return res.status(201).json({ message: "Eye Test Camp not Found", status: 404, data: {}, });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: "Failed to retrieve premiumLenses" });
+        }
+};
+exports.deleteEyeTestCamp = async (req, res) => {
+        try {
+                const bannerId = req.params.id;
+                const user = await eyeTestCamp.findById(bannerId);
+                if (user) {
+                        const user1 = await eyeTestCamp.findByIdAndDelete({ _id: user._id });;
+                        if (user1) {
+                                return res.status(201).json({ message: "Eye Test Camp delete successfully.", status: 200, data: {}, });
+                        }
+                } else {
+                        return res.status(201).json({ message: "Eye Test Camp not Found", status: 404, data: {}, });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: "Failed to retrieve Eye Test Camp" });
+        }
+};
+exports.getAllEyeTestCamp = async (req, res) => {
+        try {
+                const categories = await eyeTestCamp.findOne({ type: "Data" });
+                if (categories) {
+                        return res.status(200).json({ status: 200, message: 'Eye Test Camp found successfully', data: categories });
+                } else {
+                        return res.status(404).json({ status: 404, message: 'Eye Test Camp not found.', data: {} });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Failed to fetch Eye Test Camp' });
+        }
+};
+exports.getAllEyeTestCampFormData = async (req, res) => {
+        try {
+                const categories = await eyeTestCamp.find({ type: "form" });
+                if (categories.length > 0) {
+                        return res.status(200).json({ status: 200, message: 'Eye Test Camp found successfully', data: categories });
+                } else {
+                        return res.status(404).json({ status: 404, message: 'Eye Test Camp not found.', data: {} });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Failed to fetch Eye Test Camp' });
+        }
+};
+exports.createFranchiseTestimonial = async (req, res) => {
+        try {
+                let findBrand = await franchiseTestimonial.findOne({ label: req.body.label });
+                if (findBrand) {
+                        return res.status(409).json({ message: `${req.body.type} already exit.`, status: 409, data: {} });
+                } else {
+                        let fileUrl;
+                        if (req.file) {
+                                fileUrl = req.file ? req.file.path : "";
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
+                        }
+                        const data = {
+                                link: req.body.link,
+                                label: req.body.label,
+                                image: fileUrl,
+                        };
+                        const category = await franchiseTestimonial.create(data);
+                        return res.status(200).json({ message: `${req.body.type} add successfully.`, status: 200, data: category });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getFranchiseTestimonial = async (req, res) => {
+        const categories = await franchiseTestimonial.find({});
+        if (categories.length > 0) {
+                return res.status(201).json({ message: "Data Found", status: 200, data: categories, });
+        }
+        return res.status(201).json({ message: "Data not Found", status: 404, data: {}, });
+
+};
+exports.updateFranchiseTestimonial = async (req, res) => {
+        const { id } = req.params;
+        const category = await franchiseTestimonial.findById(id);
+        if (!category) {
+                return res.status(404).json({ message: "Data Not Found", status: 404, data: {} });
+        }
+        let fileUrl;
+        if (req.file) {
+                fileUrl = req.file ? req.file.path : "";
+        } else {
+                fileUrl = category.image;
+        }
+        category.link = req.body.link || category.link;
+        category.label = req.body.label || category.label;
+        category.image = fileUrl;
+        let update = await category.save();
+        return res.status(200).json({ message: "Updated Successfully", data: update });
+};
+exports.removeFranchiseTestimonial = async (req, res) => {
+        const { id } = req.params;
+        const category = await franchiseTestimonial.findById(id);
+        if (!category) {
+                return res.status(404).json({ message: "Data Not Found", status: 404, data: {} });
+        } else {
+                await franchiseTestimonial.findByIdAndDelete(category._id);
+                return res.status(200).json({ message: "Data Deleted Successfully !" });
+        }
+};
+exports.getAllFranchiseInquiryData = async (req, res) => {
+        try {
+                const categories = await franchiseInquiry.find({});
+                if (categories.length > 0) {
+                        return res.status(200).json({ status: 200, message: 'Franchise Inquiry found successfully', data: categories });
+                } else {
+                        return res.status(404).json({ status: 404, message: 'Franchise Inquiry not found.', data: {} });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Failed to fetch Franchise Inquiry' });
+        }
+};
+exports.addFranchise = async (req, res) => {
+        try {
+                const findData = await franchise.findOne({});
+                if (findData) {
+                        let images = [];
+                        if (req.files['image1']) {
+                                let image = req.files['image1'];
+                                req.body.image1 = image[0].path;
+                        }
+                        if (req.files['image']) {
+                                let imagess = req.files['image'];
+                                for (let i = 0; i < imagess.length; i++) {
+                                        images.push(imagess[i].path)
+                                }
+                        }
+                        const data = {
+                                image1: req.body.image1,
+                                image: images,
+                                title: req.body.title || findData.title,
+                                description: req.body.description || findData.description,
+                                email: req.body.email || findData.email,
+                                phone: req.body.phone || findData.phone,
+                        }
+                        const Data = await franchise.findByIdAndUpdate({ _id: findData._id }, { $set: data }, { new: true });
+                        return res.status(200).json({ status: 200, message: "Franchise is Added ", data: Data })
+                } else {
+                        let images = [];
+                        if (req.files['image1']) {
+                                let image = req.files['image1'];
+                                req.body.image1 = image[0].path;
+                        }
+                        if (req.files['image']) {
+                                let imagess = req.files['image'];
+                                for (let i = 0; i < imagess.length; i++) {
+                                        images.push(imagess[i].path)
+                                }
+                        }
+                        const data = {
+                                image1: req.body.image1,
+                                image: images,
+                                title: req.body.title,
+                                description: req.body.description,
+                                email: req.body.email,
+                                phone: req.body.phone,
+                        }
+                        const Data = await franchise.create(data);
+                        return res.status(200).json({ status: 200, message: "Franchise is Added ", data: Data })
+                }
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getFranchise = async (req, res) => {
+        try {
+                const Ads = await franchise.findOne();
+                if (!Ads) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                } else {
+                        return res.status(200).json({ status: 200, message: "All Franchise Data found successfully.", data: Ads })
+                }
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getFranchiseById = async (req, res) => {
+        try {
+                const Ads = await franchise.findById({ _id: req.params.id });
+                if (!Ads) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "Data found successfully.", data: Ads })
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.DeleteFranchise = async (req, res) => {
+        try {
+                const Ads = await franchise.findById({ _id: req.params.id });
+                if (!Ads) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                await franchise.findByIdAndDelete({ _id: req.params.id });
+                return res.status(200).json({ status: 200, message: "Franchise delete successfully.", data: {} })
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.createProduct = async (req, res, next) => {
+        try {
+                let images = [], featuresImages = [];
+                if (req.files['images']) {
+                        let imagess = req.files['images'];
+                        for (let i = 0; i < imagess.length; i++) {
+                                images.push(imagess[i].path)
+                        }
+                }
+                if (req.files['featureImage']) {
+                        let imagess = req.files['featureImage'];
+                        for (let i = 0; i < imagess.length; i++) {
+                                featuresImages.push(imagess[i].path)
+                        }
+                }
+                req.body.images = images;
+                req.body.featuresImage = featuresImages;
+                // const data = {
+                //         name: req.body.name,
+                //         description: req.body.description,
+                //         price: req.body.price,
+                //         type: req.body.type,
+                //         quantity: req.body.quantity,
+                //         images: images,
+                //         category: req.body.category,
+                //         subcategory: req.body.subcategory,
+                //         stock: req.body.stock,
+                // };
+                const product = await productModel.create(req.body);
+                return res.status(200).json({ message: "product add successfully.", status: 200, data: product, });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getProducts = async (req, res) => {
+        try {
+                const Ads = await productModel.find();
+                if (Ads.length == 0) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                } else {
+                        return res.status(200).json({ status: 200, message: "All Product Data found successfully.", data: Ads })
+                }
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getProductDetails = async (req, res, next) => {
+        try {
+                const product = await productModel.findById(req.params.id);
+                if (!product) {
+                        return next(new ErrorHander("Product not found", 404));
+                }
+                return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.deleteProducts = async (req, res) => {
+        try {
+                const Ads = await productModel.findById({ _id: req.params.id });
+                if (!Ads) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                await productModel.findByIdAndDelete({ _id: req.params.id });
+                return res.status(200).json({ status: 200, message: "Product delete successfully.", data: {} })
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+}

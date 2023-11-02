@@ -1,4 +1,4 @@
-const Series = require("../Model/seriesModel");
+const Series = require("../../Model/seriesModel");
 require('dotenv').config();
 
 const imagePattern = "[^\\s]+(.*?)\\.(jpg|jpeg|png|gif|JPG|JPEG|PNG|GIF)$";

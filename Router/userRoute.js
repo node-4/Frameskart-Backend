@@ -13,5 +13,10 @@ module.exports = (app) => {
         app.post("/api/v1/feedback/giveFeedback", authJwt.verifyToken, auth.giveFeedback);
         app.get("/api/v1/feedback/GetAllFeedBack", auth.GetAllFeedBack);
         app.get("/api/v1/feedback/GetFeedbackById/:id", auth.GetFeedbackById);
-
+        app.post("/api/v1/user/applyforEyeTestCamp", authJwt.verifyToken, auth.applyforEyeTestCamp);
+        app.post("/api/v1/user/applyforFranchiseInquiry", authJwt.verifyToken, auth.applyforFranchiseInquiry);
+        app.post("/api/v1/user/createWishlist/:id", [authJwt.verifyToken], auth.createWishlist);
+        app.post("/api/v1/user/removeFromWishlist/:id", [authJwt.verifyToken], auth.removeFromWishlist);
+        app.get("/api/v1/user/myWishlist", [authJwt.verifyToken], auth.myWishlist);
+        
 }
