@@ -87,4 +87,6 @@ module.exports = (app) => {
         app.get("/api/v1/admin/getProducts", auth.getProducts);
         app.get("/api/v1/admin/getProductsbyid/:id", auth.getProductDetails);
         app.delete("/api/v1/admin/deleteProducts/:id", [authJwt.verifyToken], auth.deleteProducts);
+        app.post("/api/v1/admin/notification/sendNotification", authJwt.verifyToken, auth.sendNotification);
+        app.get("/api/v1/admin/notification/allNotification", authJwt.verifyToken, auth.allNotification);
 }

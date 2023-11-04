@@ -57,6 +57,14 @@ const productSchema = mongoose.Schema({
   size: {
     type: Array,
   },
+  discountActive: {
+    type: Boolean,
+    default: false
+  },
+  discountPer: {
+    type: Number,
+    default: 0
+  },
   soldPrice: {
     type: Number,
   },
@@ -100,12 +108,12 @@ const productSchema = mongoose.Schema({
   shape: {
     type: String,
     type: mongoose.Schema.ObjectId,
-    ref: "shape",
+    ref: "shapeStyle",
   },
   style: {
     type: String,
     type: mongoose.Schema.ObjectId,
-    ref: "shape",
+    ref: "shapeStyle",
   },
   stock: {
     type: Number,

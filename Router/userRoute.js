@@ -18,5 +18,15 @@ module.exports = (app) => {
         app.post("/api/v1/user/createWishlist/:id", [authJwt.verifyToken], auth.createWishlist);
         app.post("/api/v1/user/removeFromWishlist/:id", [authJwt.verifyToken], auth.removeFromWishlist);
         app.get("/api/v1/user/myWishlist", [authJwt.verifyToken], auth.myWishlist);
-        
+        app.get("/api/v1/user/getProducts", auth.listProduct);
+        app.get("/api/v1/user/newArrivalProduct", auth.newArrivalProduct);
+        app.get('/api/v1/cart', [authJwt.verifyToken], auth.getCart);
+        app.post('/api/v1/cart/addToCart/:cartType/:id', [authJwt.verifyToken], auth.addToCart);
+        app.get('/api/v1/user/getOrder', [authJwt.verifyToken], auth.getOrder);
+        app.get('/api/v1/user/getOrderbyId/:id', [authJwt.verifyToken], auth.getOrderById);
+        app.put('/api/v1/user/updateWhatAppnotificationStatus', [authJwt.verifyToken], auth.updateWhatAppnotificationStatus);
+        app.put('/api/v1/user/updateSmsNotificationStatus', [authJwt.verifyToken], auth.updateSmsNotificationStatus);
+        app.put('/api/v1/user/updatepushNotificationStatus', [authJwt.verifyToken], auth.updatepushNotificationStatus);
+        app.put('/api/v1/user/updateEmailNotificationStatus', [authJwt.verifyToken], auth.updateEmailNotificationStatus);
+
 }

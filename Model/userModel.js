@@ -43,6 +43,22 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  whatAppnotification: {
+    type: Boolean,
+    default: false,
+  },
+  smsNotification: {
+    type: Boolean,
+    default: false,
+  },
+  pushNotification: {
+    type: Boolean,
+    default: false,
+  },
+  emailNotification: {
+    type: Boolean,
+    default: false,
+  },
   photoUrl: String,
   image: {
     type: String,
