@@ -450,14 +450,14 @@ exports.getOrder = async (req, res, next) => {
 };
 exports.getOrderById = async (req, res) => {
   try {
-          const Ads = await userOrders.findById({ _id: req.params.id });
-          if (!Ads) {
-                  return res.status(404).json({ status: 404, message: "No data found", data: {} });
-          }
-          return res.status(200).json({ status: 200, message: "Data found successfully.", data: Ads })
+    const Ads = await userOrders.findById({ _id: req.params.id });
+    if (!Ads) {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+    return res.status(200).json({ status: 200, message: "Data found successfully.", data: Ads })
   } catch (err) {
-          console.log(err);
-          return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
   }
 };
 exports.updateWhatAppnotificationStatus = async (req, res) => {
