@@ -10,10 +10,14 @@ const franchiseInquiry = require("../Model/FranchiseRegistration/franchiseInquir
 const franchise = require("../Model/FranchiseRegistration/franchise");
 const franchiseTestimonial = require("../Model/FranchiseRegistration/franchiseTestimonial");
 const product = require('../Model/productModel');
-const accessories = require('../Model/accessoriesModel');
 const Wishlist = require("../Model/whishList");
 const cartModel = require("../Model/cartModel");
 const userOrders = require("../Model/userOrders");
+const savePower = require("../Model/savePower");
+const recentlyView = require("../Model/recentlyView");
+const Address = require("../Model/Address");
+const notification = require("../Model/notification");
+const transaction = require('../Model/transactionModel');
 exports.socialLogin = async (req, res) => {
   try {
     let userData = await User.findOne({ $or: [{ mobileNumber: req.body.mobileNumber }, { socialId: req.body.socialId }, { socialType: req.body.socialType }] });
@@ -39,6 +43,7 @@ exports.socialLogin = async (req, res) => {
       req.body.email = email.split(" ").join("").toLowerCase();
       req.body.socialId = req.body.socialId;
       req.body.socialType = req.body.socialType;
+      req.body.refferalCode = await reffralCode();
       let saveUser = await User(req.body).save();
       if (saveUser) {
         const token = jwt.sign({ id: saveUser._id }, "node5flyweis");
@@ -64,7 +69,8 @@ exports.loginUser = async (req, res) => {
     let user = await User.findOne({ mobileNumber });
     if (!user) {
       const otp = randomatic("0", 4);
-      user = new User({ mobileNumber, otp, isWhatApp });
+      let refferalCode = await reffralCode();
+      user = new User({ mobileNumber, otp, refferalCode, isWhatApp });
       await user.save();
       return res.status(200).send({ status: 200, message: "OTP generated and sent to the user.", data: user, });
     } else {
@@ -305,71 +311,6 @@ exports.listProduct = async (req, res) => {
     return res.status(500).send({ message: "Internal Server error" + error.message });
   }
 };
-exports.getCart = async (req, res, next) => {
-  try {
-    const cart = await cartModel.findOne({ user: req.user._id })
-      .populate('products.productId', 'name soldPrice image')
-      .populate('accessories.accessoriesId', 'name price image');
-
-    if (!cart) {
-      return res.status(404).json({ message: 'Cart not found for the specified user.' });
-    }
-    const productTotal = cart.products.reduce((total, product) => {
-      return total + (product.productId.soldPrice * product.quantity);
-    }, 0);
-    const accessoryTotal = cart.accessories.reduce((total, accessory) => {
-      return total + (accessory.accessoriesId.price * accessory.quantity);
-    }, 0);
-    const totalCost = productTotal + accessoryTotal;
-    return res.status(200).json({ success: true, msg: "Cart retrieved successfully", cart, totalCost });
-
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-};
-exports.addToCart = async (req, res, next) => {
-  try {
-    const product2 = req.params.id;
-    const cartType = req.params.cartType;
-    let cart = await cartModel.findOne({ user: req.user._id });
-    if (!cart) {
-      cart = await createCart(req.user._id);
-    }
-    const cartKey = cartType === 'accessories' ? 'accessories' : 'products';
-    const productKey = cartType === 'accessories' ? 'accessoriesId' : 'productId';
-    const product1 = await product.findById(product2);
-    const product3 = await accessories.findById(product2);
-    if (!product1 && !product3) {
-      return next(new ErrorHander("Product not found", 404));
-    }
-    const productIndex = cart[cartKey].findIndex((cartProduct) => {
-      return cartProduct[productKey].toString() === product2;
-    });
-
-    if (productIndex < 0) {
-      let obj = {
-        [productKey]: product2,
-        quantity: req.body.quantity
-      };
-      cart[cartKey].push(obj);
-      await cart.save();
-      return res.status(200).json({ msg: "Product added to cart", data: cart });
-    } else {
-      return res.status(200).json({ msg: "Product already in cart", data: cart });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-const createCart = async (userId) => {
-  try {
-    const cart = await cartModel.create({ user: userId });
-    return cart;
-  } catch (error) {
-    throw error;
-  }
-};
 exports.newArrivalProduct = async (req, res) => {
   try {
     let query = {};
@@ -431,13 +372,13 @@ exports.newArrivalProduct = async (req, res) => {
 exports.getOrder = async (req, res, next) => {
   try {
     if (req.query.orderStatus != (null || undefined)) {
-      const cart = await userOrders.find({ userId: req.user._id, orderStatus: req.query.orderStatus }).populate('products.productId').populate('accessories.accessoriesId');
+      const cart = await userOrders.find({ userId: req.user._id, orderStatus: req.query.orderStatus }).populate('products.productId');
       if (cart.length == 0) {
         return res.status(404).json({ message: 'Orders not found for the specified user.' });
       }
       return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
     } else {
-      const cart = await userOrders.find({ userId: req.user._id }).populate('products.productId').populate('accessories.accessoriesId');
+      const cart = await userOrders.find({ userId: req.user._id }).populate('products.productId')
       if (cart.length == 0) {
         return res.status(404).json({ message: 'Orders not found for the specified user.' });
       }
@@ -531,4 +472,447 @@ exports.updateEmailNotificationStatus = async (req, res) => {
   } catch (err) {
     return res.status(400).json({ message: err.message })
   }
+}
+exports.addToCart = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id });
+    if (!cart) {
+      const products = await product.findById(req.params.id);
+      if (!products) {
+        return next(new ErrorHander("Product not found", 404));
+      }
+      const newCart = {
+        user: req.user._id,
+        products: [{ productId: products._id, quantity: req.body.quantity }],
+      };
+      const savedCart = await cartModel.create(newCart);
+      return res.status(200).json({ status: 200, message: "Product added to cart successfully", data: savedCart, });
+    } else {
+      const products = await product.findById(req.params.id);
+      if (!products) {
+        return next(new ErrorHander("Product not found", 404));
+      }
+      const existingProduct = cart.products.find((item) => item.productId.toString() === products._id.toString());
+      if (existingProduct) {
+        existingProduct.quantity = req.body.quantity;
+      } else {
+        cart.products.push({ productId: products._id, quantity: req.body.quantity });
+      }
+      const savedCart = await cart.save();
+      return res.status(200).json({ status: 200, message: "Product added to cart successfully", data: savedCart, });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getCart = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id }).populate('products.productId');
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found for the specified user.' });
+    }
+    const updatedProducts = cart.products.map((cartProduct) => {
+      const product = cartProduct.productId;
+      const productType = product.type || "product";
+      const priceField = productType === "product" ? "soldPrice" : "price";
+      const mrp = product.price || 0;
+      const netPrice = product[priceField] || 0;
+      let discount = 0;
+      if (mrp > 0) {
+        discount = mrp - netPrice;
+      } else {
+        discount = 0
+      }
+      return {
+        ...cartProduct.toObject(),
+        mrp,
+        netPrice,
+        discount,
+        total: cartProduct.quantity * netPrice,
+      };
+    });
+    const totalPrice = updatedProducts.reduce((total, cartProduct) => {
+      return total + cartProduct.total;
+    }, 0);
+    return res.status(200).json({
+      status: 200,
+      message: "Get cart successfully",
+      data: {
+        cart: { ...cart.toObject(), products: updatedProducts },
+        totalPrice,
+
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.checkout = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id }).populate('products.productId');
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found for the specified user.' });
+    }
+    const updatedProducts = cart.products.map((cartProduct) => {
+      return {
+        productId: cartProduct.productId._id,
+        price: cartProduct.productId.soldPrice || cartProduct.productId.price,
+        discountPrice: 0,
+        quantity: cartProduct.quantity
+      };
+    });
+    const orderTotalAmount = calculateTotalAmount(updatedProducts);
+    let orderId = await reffralCode()
+    const order = new userOrders({ userId: req.user._id, orderId: orderId, products: updatedProducts, orderObjTotalAmount: orderTotalAmount, });
+    await order.save();
+    return res.status(200).json({ message: 'Order placed successfully.' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error during checkout' });
+  }
+}
+exports.successOrder = async (req, res) => {
+  try {
+    let findUserOrder = await userOrders.findOne({ orderId: req.params.orderId });
+    if (findUserOrder) {
+      const user = await User.findById({ _id: findUserOrder.userId });
+      if (!user) {
+        return res.status(404).send({ status: 404, message: "User not found or token expired." });
+      }
+      let update2 = await userOrders.findOneAndUpdate({ orderId: findUserOrder.orderId }, { $set: { orderStatus: "confirmed", paymentStatus: "paid" } }, { new: true });
+      let deleteCart = await cartModel.findOneAndDelete({ user: findUserOrder.userId });
+      if (deleteCart) {
+        return res.status(200).json({ message: "Payment success.", status: 200, data: update2 });
+      }
+    } else {
+      return res.status(404).json({ message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.cancelOrder = async (req, res) => {
+  try {
+    let findUserOrder = await userOrders.findOne({ orderId: req.params.orderId });
+    if (findUserOrder) {
+      return res.status(201).json({ message: "Payment failed.", status: 201, orderId: req.params.orderId });
+    } else {
+      return res.status(404).json({ message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.addPower = async (req, res, next) => {
+  try {
+    const cart = await savePower.findOne({ user: req.user._id })
+    if (!cart) {
+      req.body.user = req.user._id;
+      const newPrescription = new savePower(req.body);
+      const savedPrescription = await newPrescription.save();
+      return res.status(200).json({ message: "Power Save successfully.", status: 200, data: savedPrescription });
+    } else {
+      const updatedPrescriptionData = {
+        odRightSpherer: req.body.odRightSpherer || cart.odRightSpherer,
+        odRightCylinder: req.body.odRightCylinder || cart.odRightCylinder,
+        odRightAxis: req.body.odRightAxis || cart.odRightAxis,
+        osLeftSpherer: req.body.osLeftSpherer || cart.osLeftSpherer,
+        osLeftCylinder: req.body.osLeftCylinder || cart.osLeftCylinder,
+        osLeftAxis: req.body.osLeftAxis || cart.osLeftAxis,
+        bifocalPower: req.body.bifocalPower || cart.bifocalPower,
+        biodRightSpherer: req.body.biodRightSpherer || cart.biodRightSpherer,
+        biodRightCylinder: req.body.biodRightCylinder || cart.biodRightCylinder,
+        biodRightAxis: req.body.biodRightAxis || cart.biodRightAxis,
+        biosLeftSpherer: req.body.biosLeftSpherer || cart.biosLeftSpherer,
+        biosLeftCylinder: req.body.biosLeftCylinder || cart.biosLeftCylinder,
+        biosLeftAxis: req.body.biosLeftAxis || cart.biosLeftAxis,
+      };
+      const savedPrescription = await savePower.findOneAndUpdate({ _id: cart._id }, { $set: updatedPrescriptionData }, { new: true });
+      return res.status(200).json({ message: "Power Save successfully.", status: 200, data: savedPrescription });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getPower = async (req, res, next) => {
+  try {
+    const cart = await savePower.findOne({ user: req.user._id })
+    if (!cart) {
+      return res.status(404).json({ message: "Power not found.", status: 404, data: {} });
+    } else {
+      return res.status(200).json({ message: "Power Save successfully.", status: 200, data: cart });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getRecentlyView = async (req, res, next) => {
+  try {
+    const cart = await recentlyView.find({ user: req.user._id }).populate({ path: "products" }).sort({ "updateAt": -1 });
+    if (!cart) {
+      return res.status(200).json({ success: false, msg: "No recentlyView", cart: {} });
+    }
+    return res.status(200).json({ success: true, msg: "recentlyView retrieved successfully", cart: cart });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getProductDetails = async (req, res, next) => {
+  try {
+    const product = await productModel.findById(req.params.id);
+    if (!product) {
+      return next(new ErrorHander("Product not found", 404));
+    }
+    const findData = await recentlyView.findOne({ user: req.user._id, products: data._id });
+    if (findData) {
+      const saved = await recentlyView.findByIdAndUpdate({ _id: findData._id }, { $set: { products: data._id } }, { new: true });
+      if (saved) {
+        return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
+      }
+    } else {
+      const saved = await recentlyView.create({ user: req.user._id, products: data._id });
+      if (saved) {
+        return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
+      }
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.createAddress = async (req, res, next) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      if (req.body.default == true) {
+        const findData = await Address.findOne({ user: data._id, default: true });
+        if (findData) {
+          let update = await Address.findByIdAndUpdate({ _id: findData._id }, { $set: { default: false } }, { new: true, });
+        }
+      }
+      req.body.user = data._id;
+      const address = await Address.create(req.body);
+      return res.status(200).json({ message: "Address create successfully.", data: address });
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.getallAddress = async (req, res, next) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      const allAddress = await Address.find({ user: data._id });
+      return res.status(200).json({ message: "Address data found.", data: allAddress });
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.updateAddress = async (req, res, next) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      const data1 = await Address.findById({ _id: req.params.id });
+      if (data1) {
+        if (req.body.default != (null || undefined)) {
+          if (req.body.default == true) {
+            const findData = await Address.findOne({ user: data._id, _id: { $ne: data1._id }, default: true });
+            if (findData) {
+              let update = await Address.findByIdAndUpdate({ _id: findData._id }, { $set: { default: false } }, { new: true, });
+            }
+          }
+        }
+        const newAddressData = req.body;
+        let update = await Address.findByIdAndUpdate({ _id: data1._id }, { $set: newAddressData }, { new: true, });
+        return res.status(200).json({ status: 200, message: "Address update successfully.", data: update });
+      } else {
+        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+      }
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.deleteAddress = async (req, res, next) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      const data1 = await Address.findById({ _id: req.params.id });
+      if (data1) {
+        let update = await Address.findByIdAndDelete(data1._id);
+        return res.status(200).json({ status: 200, message: "Address Deleted Successfully", });
+      } else {
+        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+      }
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.getAddressbyId = async (req, res, next) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      const data1 = await Address.findById({ _id: req.params.id });
+      if (data1) {
+        return res.status(200).json({ status: 200, message: "Address found successfully.", data: data1 });
+      } else {
+        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+      }
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.addMoney = async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate({ _id: req.user._id }, { $inc: { wallet: parseInt(req.body.balance) } }, { new: true });
+    if (updatedUser) {
+      const transactionData = {
+        user: req.user._id,
+        date: Date.now(),
+        amount: req.body.balance,
+        type: "Credit",
+      };
+      const createdTransaction = await transaction.create(transactionData);
+      const welcomeMessage = `Welcome, ${updatedUser.fullName}! Thank you for adding money to your wallet.`;
+      const welcomeNotification = new notification({
+        recipient: updatedUser._id,
+        content: welcomeMessage,
+        type: 'welcome',
+      });
+      await welcomeNotification.save();
+      return res.status(200).json({
+        status: 200,
+        message: "Money has been added.",
+        data: updatedUser,
+      });
+    } else {
+      return res.status(404).json({
+        status: 404,
+        message: "No data found",
+        data: {},
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      status: 500,
+      message: "Server error.",
+      data: {},
+    });
+  }
+};
+exports.removeMoney = async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate({ _id: req.user._id }, { $inc: { wallet: -parseInt(req.body.balance) } }, { new: true });
+    if (updatedUser) {
+      const transactionData = {
+        user: req.user._id,
+        date: Date.now(),
+        amount: req.body.balance,
+        type: "Debit",
+      };
+      const createdTransaction = await transaction.create(transactionData);
+      const welcomeMessage = `Welcome, ${updatedUser.fullName}! Money has been deducted from your wallet.`;
+      const welcomeNotification = new notification({
+        recipient: updatedUser._id,
+        content: welcomeMessage,
+        type: 'welcome',
+      });
+      await welcomeNotification.save();
+      return res.status(200).json({
+        status: 200,
+        message: "Money has been deducted.",
+        data: updatedUser,
+      });
+    } else {
+      return res.status(404).json({
+        status: 404,
+        message: "No data found",
+        data: {},
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      status: 500,
+      message: "Server error.",
+      data: {},
+    });
+  }
+};
+exports.getWallet = async (req, res) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      let obj = { wallet: data.wallet, esCash: data.esCash, }
+      return res.status(200).json({ status: 200, message: "get wallet", data: obj });
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.allTransactionUser = async (req, res) => {
+  try {
+    const data = await transaction.find({ user: req.user._id }).populate("user");
+    return res.status(200).json({ data: data });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+};
+exports.allcreditTransactionUser = async (req, res) => {
+  try {
+    const data = await transaction.find({ user: req.user._id, type: "Credit" });
+    return res.status(200).json({ data: data });
+  } catch (err) {
+    return res.status.status(400).json({ message: err.message });
+  }
+};
+exports.allDebitTransactionUser = async (req, res) => {
+  try {
+    const data = await transaction.find({ user: req.user._id, type: "Debit" });
+    return res.status(200).json({ data: data });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+};
+function calculateTotalAmount(products) {
+  let totalAmount = 0;
+  products.forEach((product) => {
+    const totalPrice = product.price - product.discountPrice;
+    totalAmount += totalPrice * product.quantity;
+  });
+  return totalAmount.toFixed(2);
+}
+const reffralCode = async () => {
+  var digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let OTP = '';
+  for (let i = 0; i < 9; i++) {
+    OTP += digits[Math.floor(Math.random() * 36)];
+  }
+  return OTP;
 }

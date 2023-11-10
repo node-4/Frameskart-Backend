@@ -37,7 +37,7 @@ const staticContent = mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ["ABOUTUS", "TERMS", "PRIVACY"],
+        enum: ["ABOUTUS", "TERMS", "PRIVACY", "REFUNDPRIVACY"],
     },
 }, {
     timestamps: true

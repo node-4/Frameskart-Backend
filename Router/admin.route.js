@@ -64,7 +64,7 @@ module.exports = (app) => {
         app.put("/api/v1/static/faq/:id", authJwt.verifyToken, auth.updateFaq);
         app.delete("/api/v1/static/faq/:id", authJwt.verifyToken, auth.deleteFaq);
         app.get("/api/v1/static/faq/All", auth.getAllFaqs);
-        app.get("/api/v1/static/faq/:id", auth.getFaqById); 
+        app.get("/api/v1/static/faq/:id", auth.getFaqById);
         app.post("/api/v1/admin/createPremiumLenses", upload.single('image'), [authJwt.verifyToken], auth.createPremiumLenses);
         app.get("/api/v1/admin/getAllPremiumLenses", auth.getAllPremiumLenses);
         app.get("/api/v1/admin/getPremiumLensesById/:id", auth.getPremiumLensesById);
@@ -89,4 +89,13 @@ module.exports = (app) => {
         app.delete("/api/v1/admin/deleteProducts/:id", [authJwt.verifyToken], auth.deleteProducts);
         app.post("/api/v1/admin/notification/sendNotification", authJwt.verifyToken, auth.sendNotification);
         app.get("/api/v1/admin/notification/allNotification", authJwt.verifyToken, auth.allNotification);
+        app.get('/api/v1/admin/getOrder', [authJwt.verifyToken], auth.getOrder);
+        app.put('/api/v1/admin/updateOrderStatus/:id', [authJwt.verifyToken], auth.updateOrderStatus);
+        app.post('/api/v1/static/createPrivacy', [authJwt.verifyToken], auth.createPrivacy);
+        app.put('/api/v1/static/privacy/:id', [authJwt.verifyToken], auth.updatePrivacy);
+        app.delete('/api/v1/static/privacy/:id', [authJwt.verifyToken], auth.deletePrivacy);
+        app.get('/api/v1/static/getPrivacy', auth.getPrivacy);
+        app.get('/api/v1/static/privacy/:id', auth.getPrivacybyId);
+        app.post('/api/v1/static/createRefundPrivacy', [authJwt.verifyToken], auth.createRefundPrivacy);
+        app.get('/api/v1/static/getRefundPrivacy', auth.getRefundPrivacy);
 }

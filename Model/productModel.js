@@ -11,6 +11,12 @@ const productSchema = mongoose.Schema({
     type: [String],
     required: true,
   },
+  price: {
+    type: Number,
+  },
+  image: {
+    type: String
+  },
   name: {
     type: String,
     required: true,
@@ -119,6 +125,11 @@ const productSchema = mongoose.Schema({
     type: Number,
     required: ["Please Enter Stock"],
     default: 1,
+  },
+  type: {
+    type: String,
+    enum: ["product", "accessories"],
+    default: "product"
   },
 }, { timestamps: true });
 productSchema.plugin(mongoosePaginate);

@@ -21,6 +21,7 @@ const bcrypt = require("bcryptjs");
 const Faq = require('../Model/faq')
 const jwt = require("jsonwebtoken");
 const notification = require("../Model/notification");
+const userOrders = require("../Model/userOrders");
 exports.registration = async (req, res) => {
         const { mobileNumber, email } = req.body;
         try {
@@ -758,7 +759,7 @@ exports.removeStyle = async (req, res) => {
 };
 exports.createAccessories = async (req, res) => {
         try {
-                let findAccessories = await accessories.findOne({ name: req.body.name });
+                let findAccessories = await productModel.findOne({ name: req.body.name, type: 'accessories' });
                 if (findAccessories) {
                         return res.status(409).json({ message: "Accessories already exit.", status: 404, data: {} });
                 } else {
@@ -767,8 +768,8 @@ exports.createAccessories = async (req, res) => {
                         } else {
                                 return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
                         }
-                        const data = { name: req.body.name, price: req.body.price, image: req.body.image };
-                        const accessorie = await accessories.create(data);
+                        const data = { name: req.body.name, price: req.body.price, image: req.body.image, type: 'accessories' };
+                        const accessorie = await productModel.create(data);
                         return res.status(200).json({ message: "Accessories add successfully.", status: 200, data: accessorie });
                 }
         } catch (error) {
@@ -777,7 +778,7 @@ exports.createAccessories = async (req, res) => {
 };
 exports.getAccessories = async (req, res) => {
         try {
-                const findShape = await accessories.find();
+                const findShape = await productModel.find({ type: 'accessories' });
                 if (findShape.length > 0) {
                         return res.status(200).json({ success: true, data: findShape });
                 } else {
@@ -790,7 +791,7 @@ exports.getAccessories = async (req, res) => {
 exports.updateAccessories = async (req, res) => {
         try {
                 const { id } = req.params;
-                const Accessoriess = await accessories.findById(id);
+                const Accessoriess = await productModel.findById(id);
                 if (!Accessoriess) {
                         return res.status(404).json({ message: "Accessories Not Found", status: 404, data: {} });
                 }
@@ -801,6 +802,7 @@ exports.updateAccessories = async (req, res) => {
                 }
                 Accessoriess.name = req.body.name || Accessoriess.name;
                 Accessoriess.price = req.body.price || Accessoriess.price;
+                Accessoriess.type = 'accessories';
                 let update = await Accessoriess.save();
                 return res.status(200).json({ message: "Updated Successfully", data: update });
         } catch (error) {
@@ -810,11 +812,11 @@ exports.updateAccessories = async (req, res) => {
 exports.removeAccessories = async (req, res) => {
         try {
                 const { id } = req.params;
-                const findShape = await accessories.findById(id);
+                const findShape = await productModel.findById(id);
                 if (!findShape) {
                         return res.status(404).json({ message: "Accessories Not Found", status: 404, data: {} });
                 } else {
-                        await shape.findByIdAndDelete(findShape._id);
+                        await productModel.findByIdAndDelete(findShape._id);
                         return res.status(200).json({ message: "Accessories Deleted Successfully !" });
                 }
         } catch (error) {
@@ -1414,9 +1416,10 @@ exports.createProduct = async (req, res, next) => {
                 //         subcategory: req.body.subcategory,
                 //         stock: req.body.stock,
                 // };
-                if(req.body.discountActive == 'true'){
+                if (req.body.discountActive == 'true') {
                         req.body.discountPer = req.body.discountPer;
                 }
+                req.body.type = "product";
                 const product = await productModel.create(req.body);
                 return res.status(200).json({ message: "product add successfully.", status: 200, data: product, });
         } catch (error) {
@@ -1425,7 +1428,7 @@ exports.createProduct = async (req, res, next) => {
 };
 exports.getProducts = async (req, res) => {
         try {
-                const Ads = await productModel.find();
+                const Ads = await productModel.find({ type: "product" });
                 if (Ads.length == 0) {
                         return res.status(404).json({ status: 404, message: "No data found", data: {} });
                 } else {
@@ -1595,3 +1598,131 @@ exports.allNotification = async (req, res) => {
                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 }
+exports.getOrder = async (req, res, next) => {
+        try {
+                if (req.query.orderStatus != (null || undefined)) {
+                        const cart = await userOrders.find({ orderStatus: req.query.orderStatus }).populate('products.productId');
+                        if (cart.length == 0) {
+                                return res.status(404).json({ message: 'Orders not found for the specified user.' });
+                        }
+                        return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
+                } else {
+                        const cart = await userOrders.find({ orderStatus: "confirmed" }).populate('products.productId')
+                        if (cart.length == 0) {
+                                return res.status(404).json({ message: 'Orders not found for the specified user.' });
+                        }
+                        return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Internal server error' });
+        }
+};
+exports.updateOrderStatus = async (req, res) => {
+        try {
+                const orders = await userOrders.findById({ _id: req.params.id });
+                if (!orders) {
+                        return res.status(404).json({ status: 404, message: "Orders not found", data: {} });
+                } else {
+                        const update = await userOrders.findByIdAndUpdate({ _id: orders._id }, { $set: { orderStatus: req.body.orderStatus } }, { new: true });
+                        return res.status(200).json({ status: 200, msg: "orders of user", data: update })
+                }
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.createPrivacy = async (req, res) => {
+        try {
+                if (!req.body.privacy) {
+                        return res.status(400).send("please specify privacy");
+                }
+                const result = await static.create({ privacy: req.body.privacy, type: "PRIVACY" });
+                return res.status(200).json({ status: 200, message: "Data create successfully.", data: result });
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.updatePrivacy = async (req, res) => {
+        try {
+                const data = await static.findOne({ _id: req.params.id, type: "PRIVACY" });
+                if (!data) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                } else {
+                        let privacy = req.body.privacy || data.privacy;
+                        const data1 = await static.findByIdAndUpdate({ _id: data._id }, { privacy: privacy, type: data.type }, { new: true, });
+                        return res.status(200).json({ status: 200, message: "update successfully.", data: data1 });
+                }
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getPrivacy = async (req, res) => {
+        try {
+                const data = await static.find({ type: "PRIVACY" });
+                if (data.length == 0) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "Data found successfully.", data: data });
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getPrivacybyId = async (req, res) => {
+        try {
+                const data = await static.findById(req.params.id);
+                if (!data || data.length === 0) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "Data found successfully.", data: data });
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.deletePrivacy = async (req, res) => {
+        try {
+                const data = await static.findByIdAndDelete(req.params.id);
+                if (!data) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "Deleted Successfully", });
+        } catch (err) {
+                console.log(err.message);
+                return res.status(500).send({ msg: "internal server error", error: err.message });
+        }
+};
+exports.createRefundPrivacy = async (req, res) => {
+        try {
+                const data = await static.findOne({ type: "REFUNDPRIVACY" });
+                if (!data) {
+                        if (!req.body.privacy) {
+                                return res.status(400).send("please specify privacy");
+                        }
+                        const result = await static.create({ privacy: req.body.privacy, type: "REFUNDPRIVACY" });
+                        return res.status(200).json({ status: 200, message: "Data create successfully.", data: result });
+                } else {
+                        let privacy = req.body.privacy || data.privacy;
+                        const data1 = await static.findByIdAndUpdate({ _id: data._id }, { privacy: privacy, type: data.type }, { new: true, });
+                        return res.status(200).json({ status: 200, message: "update successfully.", data: data1 });
+                }
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getRefundPrivacy = async (req, res) => {
+        try {
+                const data = await static.findOne({ type: "REFUNDPRIVACY" });
+                if (!data || data.length === 0) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "Data found successfully.", data: data });
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};

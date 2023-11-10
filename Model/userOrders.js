@@ -18,22 +18,6 @@ const cartProductsSchema = new schema({
     default: 1
   }
 }, { _id: false })
-const cartServiceSchema = new schema({
-  accessoriesId: {
-    type: schema.Types.ObjectId,
-    ref: "accessories"
-  },
-  price: {
-    type: Number,
-  },
-  discountPrice: {
-    type: Number,
-  },
-  quantity: {
-    type: Number,
-    default: 1
-  }
-}, { _id: false })
 const DocumentSchema = schema({
   userId: {
     type: schema.Types.ObjectId,
@@ -44,9 +28,6 @@ const DocumentSchema = schema({
   },
   products: {
     type: [cartProductsSchema]
-  },
-  accessories: {
-    type: [cartServiceSchema]
   },
   orderObjTotalAmount: {
     type: String,
@@ -68,7 +49,7 @@ const DocumentSchema = schema({
   },
   orderStatus: {
     type: String,
-    enum: ["unconfirmed", "confirmed", "Cancel", "Delivered"],
+    enum: ["unconfirmed", "confirmed", "preparingForDispatch", "onTheWay", "Cancel", "Delivered"],
     default: "unconfirmed",
   },
   paymentStatus: {

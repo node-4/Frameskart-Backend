@@ -59,9 +59,16 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  photoUrl: String,
-  image: {
-    type: String,
+  refferalCode: { type: String, },
+  refferUserId: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+  joinUser: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+  wallet: {
+    type: Number,
+    default: 0,
+  },
+  esCash: {
+    type: Number,
+    default: 0,
   },
   photo: {
     type: String,
