@@ -1114,8 +1114,8 @@ exports.deletePremiumLenses = async (req, res) => {
 };
 exports.getAllPremiumLenses = async (req, res) => {
         try {
-                const categories = await premiumLenses.findOne();
-                if (categories) {
+                const categories = await premiumLenses.find();
+                if (categories.length>0) {
                         return res.status(200).json({ status: 200, message: 'Premium Lenses found successfully', data: categories });
                 } else {
                         return res.status(404).json({ status: 404, message: 'Premium Lenses not found.', data: {} });
