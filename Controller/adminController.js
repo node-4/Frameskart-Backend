@@ -880,19 +880,21 @@ exports.viewContactDetails = async (req, res) => {
 };
 exports.createAboutUs = async (req, res) => {
         try {
-                const { title, description, image, meetTheLeader, productDescription, products } = req.body;
+                const { title, description, image, focusDescription, focusTitle, meetTheLeader, productDescription, products } = req.body;
                 let findBanner = await static.findOne({ type: "ABOUTUS" });
                 if (findBanner) {
                         if (req.file) {
                                 req.body.image = req.file.path;
                         }
                         let data = {
-                                title: title || findData.title,
-                                image: req.body.image || findData.image,
-                                productDescription: productDescription || findData.productDescription,
-                                description: description || findData.description,
-                                products: products || findData.products,
-                                meetTheLeader: meetTheLeader || findData.meetTheLeader,
+                                title: title || findBanner.title,
+                                image: req.body.image || findBanner.image,
+                                productDescription: productDescription || findBanner.productDescription,
+                                description: description || findBanner.description,
+                                products: products || findBanner.products,
+                                meetTheLeader: meetTheLeader || findBanner.meetTheLeader,
+                                focusDescription: focusDescription || findBanner.focusDescription,
+                                focusTitle: focusTitle || findBanner.focusTitle,
                                 type: "ABOUTUS",
                         }
                         const newCategory = await static.findByIdAndUpdate({ _id: findBanner._id }, { $set: data }, { new: true });
@@ -1115,7 +1117,7 @@ exports.deletePremiumLenses = async (req, res) => {
 exports.getAllPremiumLenses = async (req, res) => {
         try {
                 const categories = await premiumLenses.find();
-                if (categories.length>0) {
+                if (categories.length > 0) {
                         return res.status(200).json({ status: 200, message: 'Premium Lenses found successfully', data: categories });
                 } else {
                         return res.status(404).json({ status: 404, message: 'Premium Lenses not found.', data: {} });

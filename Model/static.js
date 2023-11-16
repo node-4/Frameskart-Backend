@@ -9,6 +9,12 @@ const staticContent = mongoose.Schema({
     image: {
         type: String
     },
+    focusTitle: {
+        type: String
+    },
+    focusDescription: {
+        type: String
+    },
     meetTheLeader: {
         type: String
     },
