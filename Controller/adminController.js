@@ -1498,7 +1498,6 @@ exports.sendNotification = async (req, res) => {
                                                                 time: req.body.time,
                                                         }
                                                         await notification.create(obj1)
-                                                        return res.status(200).json({ status: 200, message: "Notification send successfully." });
                                                 } else {
                                                         let obj = {
                                                                 userId: userData[i]._id,
@@ -1518,9 +1517,9 @@ exports.sendNotification = async (req, res) => {
                                                                 time: req.body.time,
                                                         }
                                                         await notification.create(obj1)
-                                                        return res.status(200).json({ status: 200, message: "Notification send successfully." });
                                                 }
                                         }
+                                        return res.status(200).json({ status: 200, message: "Notification send successfully." });
                                 }
                         }
                         if (req.body.total == "SINGLE") {
