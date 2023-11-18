@@ -98,4 +98,9 @@ module.exports = (app) => {
         app.get('/api/v1/static/privacy/:id', auth.getPrivacybyId);
         app.post('/api/v1/static/createRefundPrivacy', [authJwt.verifyToken], auth.createRefundPrivacy);
         app.get('/api/v1/static/getRefundPrivacy', auth.getRefundPrivacy);
+        app.post('/api/v1/static/createTerms', [authJwt.verifyToken], auth.createTerms);
+        app.put('/api/v1/static/term/:id', [authJwt.verifyToken], auth.updateTerms);
+        app.delete('/api/v1/static/term/:id', [authJwt.verifyToken], auth.deleteTerms);
+        app.get('/api/v1/static/getTerm', auth.getTerms);
+        app.get('/api/v1/static/term/:id', auth.getTermsbyId);
 }
