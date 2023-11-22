@@ -676,14 +676,14 @@ exports.getProductDetails = async (req, res, next) => {
     if (!product) {
       return next(new ErrorHander("Product not found", 404));
     }
-    const findData = await recentlyView.findOne({ user: req.user._id, products: data._id });
+    const findData = await recentlyView.findOne({ user: req.user._id, products: product._id });
     if (findData) {
-      const saved = await recentlyView.findByIdAndUpdate({ _id: findData._id }, { $set: { products: data._id } }, { new: true });
+      const saved = await recentlyView.findByIdAndUpdate({ _id: findData._id }, { $set: { products: product._id } }, { new: true });
       if (saved) {
         return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
       }
     } else {
-      const saved = await recentlyView.create({ user: req.user._id, products: data._id });
+      const saved = await recentlyView.create({ user: req.user._id, products: product._id });
       if (saved) {
         return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
       }
