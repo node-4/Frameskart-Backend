@@ -17,6 +17,7 @@ const savePower = require("../Model/savePower");
 const recentlyView = require("../Model/recentlyView");
 const Address = require("../Model/Address");
 const notification = require("../Model/notification");
+const helpandSupport = require('../Model/helpAndSupport');
 const transaction = require('../Model/transactionModel');
 exports.socialLogin = async (req, res) => {
   try {
@@ -907,6 +908,45 @@ exports.allDebitTransactionUser = async (req, res) => {
     return res.status(200).json({ data: data });
   } catch (err) {
     return res.status(400).json({ message: err.message });
+  }
+};
+exports.AddQuery = async (req, res) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      const data1 = {
+        user: data._id,
+        name: req.body.name,
+        email: req.body.email,
+        mobile: req.body.mobile,
+        query: req.body.query
+      }
+      const Data = await helpandSupport.create(data1);
+      return res.status(200).json({ status: 200, message: "Send successfully.", data: Data })
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.getAllQuery = async (req, res) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      const Data = await helpandSupport.find({ user: req.user._id });
+      if (data.length == 0) {
+        return res.status(404).json({ status: 404, message: "Help and support data not found", data: {} });
+      } else {
+        return res.status(200).json({ status: 200, message: "Data found successfully.", data: Data })
+      }
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
   }
 };
 function calculateTotalAmount(products) {

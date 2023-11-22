@@ -46,4 +46,6 @@ module.exports = (app) => {
         app.get("/api/v1/allTransactionUser", [authJwt.verifyToken], auth.allTransactionUser);
         app.get("/api/v1/allcreditTransactionUser", [authJwt.verifyToken], auth.allcreditTransactionUser);
         app.get("/api/v1/allDebitTransactionUser", [authJwt.verifyToken], auth.allDebitTransactionUser);
+        app.post('/api/v1/user/help/addQuery', [authJwt.verifyToken], auth.AddQuery);
+        app.get('/api/v1/user/help/getAllQuery', [authJwt.verifyToken], auth.getAllQuery);
 }
