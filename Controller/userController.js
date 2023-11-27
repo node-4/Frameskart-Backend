@@ -487,7 +487,7 @@ exports.addToCart = async (req, res, next) => {
   try {
     const cart = await cartModel.findOne({ user: req.user._id });
     if (!cart) {
-      const products = await product.findById(req.params.id);
+      const products = await productModel.findById(req.params.id);
       if (!products) {
         return next(new ErrorHander("Product not found", 404));
       }
