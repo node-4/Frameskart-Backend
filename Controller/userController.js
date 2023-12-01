@@ -194,223 +194,6 @@ exports.applyforFranchiseInquiry = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-exports.createWishlist = async (req, res, next) => {
-  try {
-    const productId = req.params.id;
-    const userId = req.user._id;
-    let wishList = await Wishlist.findOne({ user: userId });
-    if (!wishList) {
-      wishList = new Wishlist({ user: userId, products: [productId] });
-    } else {
-      if (!wishList.products.includes(productId)) {
-        wishList.products.push(productId);
-      } else {
-        return res.status(200).json({ status: 200, message: "Product is already in the wishlist" });
-      }
-    }
-    await wishList.save();
-    return res.status(200).json({ status: 200, message: "Product added to wishlist successfully" });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send({ status: 500, message: "Server error", data: {} });
-  }
-};
-exports.removeFromWishlist = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const wishlist = await Wishlist.findOne({ user: userId });
-    if (!wishlist) {
-      return res.status(404).json({ message: "Wishlist not found", status: 404 });
-    }
-    const productId = req.params.id;
-    const viewProduct = await Product.findById(productId);
-    if (!viewProduct) {
-      return res.status(404).json({ message: "Product not found", status: 404 });
-    }
-    wishlist.products.pull(productId);
-    await wishlist.save();
-    // viewProduct.Wishlistuser.pull(userId);
-    // await viewProduct.save();
-    return res.status(200).json({ status: 200, message: "Removed from Wishlist" });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send({ status: 500, message: "Server error", data: {} });
-  }
-};
-
-exports.myWishlist = async (req, res, next) => {
-  try {
-    let myList = await Wishlist.findOne({ user: req.user._id }).populate('products');
-    if (!myList) {
-      myList = await Wishlist.create({ user: req.user._id });
-    }
-    console.log(myList);
-    let array = []
-    for (let i = 0; i < myList.products.length; i++) {
-      const data = await product.findById(myList.products[i]._id).populate('style shape brand gender color subcategory category')
-      array.push(data)
-    }
-    let obj = {
-      _id: myList._id,
-      user: myList.user,
-      products: array,
-      __v: myList.__v
-    }
-
-    return res.status(200).json({ status: 200, wishlist: obj, });
-  } catch (error) {
-    console.log(error);
-    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
-  }
-};
-exports.listProduct = async (req, res) => {
-  try {
-    let query = {};
-    if (req.query.categoryId) {
-      query.category = req.query.categoryId;
-    }
-    if (req.query.subcategoryId) {
-      query.subcategory = req.query.subcategoryId;
-    }
-    if (req.query.gender) {
-      query.gender = req.query.gender;
-    }
-    if (req.query.color) {
-      query.color = req.query.color;
-    }
-    if (req.query.brand) {
-      query.brand = req.query.brand;
-    }
-    if (req.query.shape) {
-      query.shape = req.query.shape;
-    }
-    if (req.query.style) {
-      query.style = req.query.style;
-    }
-    if (req.query.fromDate && !req.query.toDate) {
-      query.createdAt = { $gte: req.query.fromDate };
-    }
-    if (!req.query.fromDate && req.query.toDate) {
-      query.createdAt = { $lte: req.query.toDate };
-    }
-    if (req.query.fromDate && req.query.toDate) {
-      query.$and = [
-        { createdAt: { $gte: req.query.fromDate } },
-        { createdAt: { $lte: req.query.toDate } },
-      ];
-    }
-    var limit = parseInt(req.query.limit);
-    var options = {
-      page: parseInt(req.query.page) || 1,
-      limit: limit || 1000,
-      sort: { createdAt: 1 },
-      populate: { path: 'category subcategory color gender brand shape style' }
-    }
-    product.paginate(query, options, (transErr, transRes) => {
-      if (transErr) {
-        return res.status(501).send({ message: "Internal Server error" + transErr.message });
-      } else if (transRes.docs.length == 0) {
-        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: [] });
-      } else {
-        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: transRes });
-      }
-    })
-
-  } catch (error) {
-    console.log(error)
-    return res.status(500).send({ message: "Internal Server error" + error.message });
-  }
-};
-exports.newArrivalProduct = async (req, res) => {
-  try {
-    let query = {};
-    if (req.query.categoryId) {
-      query.category = req.query.categoryId;
-    }
-    if (req.query.subcategoryId) {
-      query.subcategory = req.query.subcategoryId;
-    }
-    if (req.query.gender) {
-      query.gender = req.query.gender;
-    }
-    if (req.query.color) {
-      query.color = req.query.color;
-    }
-    if (req.query.brand) {
-      query.brand = req.query.brand;
-    }
-    if (req.query.shape) {
-      query.shape = req.query.shape;
-    }
-    if (req.query.style) {
-      query.style = req.query.style;
-    }
-    if (req.query.fromDate && !req.query.toDate) {
-      query.createdAt = { $gte: req.query.fromDate };
-    }
-    if (!req.query.fromDate && req.query.toDate) {
-      query.createdAt = { $lte: req.query.toDate };
-    }
-    if (req.query.fromDate && req.query.toDate) {
-      query.$and = [
-        { createdAt: { $gte: req.query.fromDate } },
-        { createdAt: { $lte: req.query.toDate } },
-      ];
-    }
-    var limit = parseInt(req.query.limit);
-    var options = {
-      page: parseInt(req.query.page) || 1,
-      limit: limit || 1000,
-      sort: { createdAt: -1 },
-      populate: { path: 'category subcategory color gender brand shape style' }
-    }
-    product.paginate(query, options, (transErr, transRes) => {
-      if (transErr) {
-        return res.status(501).send({ message: "Internal Server error" + transErr.message });
-      } else if (transRes.docs.length == 0) {
-        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: [] });
-      } else {
-        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: transRes });
-      }
-    })
-
-  } catch (error) {
-    console.log(error)
-    return res.status(500).send({ message: "Internal Server error" + error.message });
-  }
-};
-exports.getOrder = async (req, res, next) => {
-  try {
-    if (req.query.orderStatus != (null || undefined)) {
-      const cart = await userOrders.find({ userId: req.user._id, orderStatus: req.query.orderStatus }).populate('products.productId');
-      if (cart.length == 0) {
-        return res.status(404).json({ message: 'Orders not found for the specified user.' });
-      }
-      return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
-    } else {
-      const cart = await userOrders.find({ userId: req.user._id }).populate('products.productId')
-      if (cart.length == 0) {
-        return res.status(404).json({ message: 'Orders not found for the specified user.' });
-      }
-      return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-};
-exports.getOrderById = async (req, res) => {
-  try {
-    const Ads = await userOrders.findById({ _id: req.params.id });
-    if (!Ads) {
-      return res.status(404).json({ status: 404, message: "No data found", data: {} });
-    }
-    return res.status(200).json({ status: 200, message: "Data found successfully.", data: Ads })
-  } catch (err) {
-    console.log(err);
-    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
-  }
-};
 exports.updateWhatAppnotificationStatus = async (req, res) => {
   try {
     const findUser = await User.findById({ _id: req.user._id });
@@ -483,139 +266,6 @@ exports.updateEmailNotificationStatus = async (req, res) => {
     return res.status(400).json({ message: err.message })
   }
 }
-exports.addToCart = async (req, res, next) => {
-  try {
-    const cart = await cartModel.findOne({ user: req.user._id });
-    if (!cart) {
-      const products = await productModel.findById(req.params.id);
-      if (!products) {
-        return next(new ErrorHander("Product not found", 404));
-      }
-      const newCart = {
-        user: req.user._id,
-        products: [{ productId: products._id, quantity: req.body.quantity }],
-      };
-      const savedCart = await cartModel.create(newCart);
-      return res.status(200).json({ status: 200, message: "Product added to cart successfully", data: savedCart, });
-    } else {
-      const products = await productModel.findById(req.params.id);
-      if (!products) {
-        return next(new ErrorHander("Product not found", 404));
-      }
-      const existingProduct = cart.products.find((item) => item.productId.toString() === products._id.toString());
-      if (existingProduct) {
-        existingProduct.quantity = req.body.quantity;
-      } else {
-        cart.products.push({ productId: products._id, quantity: req.body.quantity });
-      }
-      const savedCart = await cart.save();
-      return res.status(200).json({ status: 200, message: "Product added to cart successfully", data: savedCart, });
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-};
-exports.getCart = async (req, res, next) => {
-  try {
-    const cart = await cartModel.findOne({ user: req.user._id }).populate('products.productId');
-    if (!cart) {
-      return res.status(404).json({ message: 'Cart not found for the specified user.' });
-    }
-    const updatedProducts = cart.products.map((cartProduct) => {
-      const product = cartProduct.productId;
-      const productType = product.type || "product";
-      const priceField = productType === "product" ? "soldPrice" : "price";
-      const mrp = product.price || 0;
-      const netPrice = product[priceField] || 0;
-      let discount = 0;
-      if (mrp > 0) {
-        discount = mrp - netPrice;
-      } else {
-        discount = 0
-      }
-      return {
-        ...cartProduct.toObject(),
-        mrp,
-        netPrice,
-        discount,
-        total: cartProduct.quantity * netPrice,
-      };
-    });
-    const totalPrice = updatedProducts.reduce((total, cartProduct) => {
-      return total + cartProduct.total;
-    }, 0);
-    return res.status(200).json({
-      status: 200,
-      message: "Get cart successfully",
-      data: {
-        cart: { ...cart.toObject(), products: updatedProducts },
-        totalPrice,
-
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-};
-exports.checkout = async (req, res, next) => {
-  try {
-    const cart = await cartModel.findOne({ user: req.user._id }).populate('products.productId');
-    if (!cart) {
-      return res.status(404).json({ message: 'Cart not found for the specified user.' });
-    }
-    const updatedProducts = cart.products.map((cartProduct) => {
-      return {
-        productId: cartProduct.productId._id,
-        price: cartProduct.productId.soldPrice || cartProduct.productId.price,
-        discountPrice: 0,
-        quantity: cartProduct.quantity
-      };
-    });
-    const orderTotalAmount = calculateTotalAmount(updatedProducts);
-    let orderId = await reffralCode()
-    const order = new userOrders({ userId: req.user._id, orderId: orderId, products: updatedProducts, orderObjTotalAmount: orderTotalAmount, });
-    await order.save();
-    return res.status(200).json({ message: 'Order placed successfully.' });
-  } catch (error) {
-    return res.status(500).json({ error: 'Internal server error during checkout' });
-  }
-}
-exports.successOrder = async (req, res) => {
-  try {
-    let findUserOrder = await userOrders.findOne({ orderId: req.params.orderId });
-    if (findUserOrder) {
-      const user = await User.findById({ _id: findUserOrder.userId });
-      if (!user) {
-        return res.status(404).send({ status: 404, message: "User not found or token expired." });
-      }
-      let update2 = await userOrders.findOneAndUpdate({ orderId: findUserOrder.orderId }, { $set: { orderStatus: "confirmed", paymentStatus: "paid" } }, { new: true });
-      let deleteCart = await cartModel.findOneAndDelete({ user: findUserOrder.userId });
-      if (deleteCart) {
-        return res.status(200).json({ message: "Payment success.", status: 200, data: update2 });
-      }
-    } else {
-      return res.status(404).json({ message: "No data found", data: {} });
-    }
-  } catch (error) {
-    console.log(error);
-    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
-  }
-};
-exports.cancelOrder = async (req, res) => {
-  try {
-    let findUserOrder = await userOrders.findOne({ orderId: req.params.orderId });
-    if (findUserOrder) {
-      return res.status(201).json({ message: "Payment failed.", status: 201, orderId: req.params.orderId });
-    } else {
-      return res.status(404).json({ message: "No data found", data: {} });
-    }
-  } catch (error) {
-    console.log(error);
-    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
-  }
-};
 exports.addPower = async (req, res, next) => {
   try {
     const cart = await savePower.findOne({ user: req.user._id })
@@ -660,34 +310,39 @@ exports.getPower = async (req, res, next) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
-exports.getRecentlyView = async (req, res, next) => {
+exports.AddQuery = async (req, res) => {
   try {
-    const cart = await recentlyView.find({ user: req.user._id }).populate({ path: "products" }).sort({ "updateAt": -1 });
-    if (!cart) {
-      return res.status(200).json({ success: false, msg: "No recentlyView", cart: {} });
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      const data1 = {
+        user: data._id,
+        name: req.body.name,
+        email: req.body.email,
+        mobile: req.body.mobile,
+        query: req.body.query
+      }
+      const Data = await helpandSupport.create(data1);
+      return res.status(200).json({ status: 200, message: "Send successfully.", data: Data })
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
     }
-    return res.status(200).json({ success: true, msg: "recentlyView retrieved successfully", cart: cart });
-  } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
   }
 };
-exports.getProductDetails = async (req, res, next) => {
+exports.getAllQuery = async (req, res) => {
   try {
-    const product = await productModel.findById(req.params.id);
-    if (!product) {
-      return next(new ErrorHander("Product not found", 404));
-    }
-    const findData = await recentlyView.findOne({ user: req.user._id, products: product._id });
-    if (findData) {
-      const saved = await recentlyView.findByIdAndUpdate({ _id: findData._id }, { $set: { products: product._id } }, { new: true });
-      if (saved) {
-        return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      const Data = await helpandSupport.find({ user: req.user._id });
+      if (data.length == 0) {
+        return res.status(404).json({ status: 404, message: "Help and support data not found", data: {} });
+      } else {
+        return res.status(200).json({ status: 200, message: "Data found successfully.", data: Data })
       }
     } else {
-      const saved = await recentlyView.create({ user: req.user._id, products: product._id });
-      if (saved) {
-        return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
-      }
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
     }
   } catch (err) {
     console.log(err);
@@ -910,45 +565,393 @@ exports.allDebitTransactionUser = async (req, res) => {
     return res.status(400).json({ message: err.message });
   }
 };
-exports.AddQuery = async (req, res) => {
+
+
+exports.createWishlist = async (req, res, next) => {
   try {
-    const data = await User.findOne({ _id: req.user._id, });
-    if (data) {
-      const data1 = {
-        user: data._id,
-        name: req.body.name,
-        email: req.body.email,
-        mobile: req.body.mobile,
-        query: req.body.query
-      }
-      const Data = await helpandSupport.create(data1);
-      return res.status(200).json({ status: 200, message: "Send successfully.", data: Data })
+    const productId = req.params.id;
+    const userId = req.user._id;
+    let wishList = await Wishlist.findOne({ user: userId });
+    if (!wishList) {
+      wishList = new Wishlist({ user: userId, products: [productId] });
     } else {
-      return res.status(404).json({ status: 404, message: "No data found", data: {} });
-    }
-  } catch (err) {
-    console.log(err);
-    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
-  }
-};
-exports.getAllQuery = async (req, res) => {
-  try {
-    const data = await User.findOne({ _id: req.user._id, });
-    if (data) {
-      const Data = await helpandSupport.find({ user: req.user._id });
-      if (data.length == 0) {
-        return res.status(404).json({ status: 404, message: "Help and support data not found", data: {} });
+      if (!wishList.products.includes(productId)) {
+        wishList.products.push(productId);
       } else {
-        return res.status(200).json({ status: 200, message: "Data found successfully.", data: Data })
+        return res.status(200).json({ status: 200, message: "Product is already in the wishlist" });
+      }
+    }
+    await wishList.save();
+    return res.status(200).json({ status: 200, message: "Product added to wishlist successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ status: 500, message: "Server error", data: {} });
+  }
+};
+exports.removeFromWishlist = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const wishlist = await Wishlist.findOne({ user: userId });
+    if (!wishlist) {
+      return res.status(404).json({ message: "Wishlist not found", status: 404 });
+    }
+    const productId = req.params.id;
+    const viewProduct = await Product.findById(productId);
+    if (!viewProduct) {
+      return res.status(404).json({ message: "Product not found", status: 404 });
+    }
+    wishlist.products.pull(productId);
+    await wishlist.save();
+    // viewProduct.Wishlistuser.pull(userId);
+    // await viewProduct.save();
+    return res.status(200).json({ status: 200, message: "Removed from Wishlist" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ status: 500, message: "Server error", data: {} });
+  }
+};
+exports.myWishlist = async (req, res, next) => {
+  try {
+    let myList = await Wishlist.findOne({ user: req.user._id }).populate('products');
+    if (!myList) {
+      myList = await Wishlist.create({ user: req.user._id });
+    }
+    console.log(myList);
+    let array = []
+    for (let i = 0; i < myList.products.length; i++) {
+      const data = await product.findById(myList.products[i]._id).populate('style shape brand gender color subcategory category')
+      array.push(data)
+    }
+    let obj = {
+      _id: myList._id,
+      user: myList.user,
+      products: array,
+      __v: myList.__v
+    }
+
+    return res.status(200).json({ status: 200, wishlist: obj, });
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.listProduct = async (req, res) => {
+  try {
+    let query = {};
+    if (req.query.categoryId) {
+      query.category = req.query.categoryId;
+    }
+    if (req.query.subcategoryId) {
+      query.subcategory = req.query.subcategoryId;
+    }
+    if (req.query.gender) {
+      query.gender = req.query.gender;
+    }
+    if (req.query.color) {
+      query.color = req.query.color;
+    }
+    if (req.query.brand) {
+      query.brand = req.query.brand;
+    }
+    if (req.query.shape) {
+      query.shape = req.query.shape;
+    }
+    if (req.query.style) {
+      query.style = req.query.style;
+    }
+    if (req.query.fromDate && !req.query.toDate) {
+      query.createdAt = { $gte: req.query.fromDate };
+    }
+    if (!req.query.fromDate && req.query.toDate) {
+      query.createdAt = { $lte: req.query.toDate };
+    }
+    if (req.query.fromDate && req.query.toDate) {
+      query.$and = [
+        { createdAt: { $gte: req.query.fromDate } },
+        { createdAt: { $lte: req.query.toDate } },
+      ];
+    }
+    var limit = parseInt(req.query.limit);
+    var options = {
+      page: parseInt(req.query.page) || 1,
+      limit: limit || 1000,
+      sort: { createdAt: 1 },
+      populate: { path: 'category subcategory color gender brand shape style' }
+    }
+    product.paginate(query, options, (transErr, transRes) => {
+      if (transErr) {
+        return res.status(501).send({ message: "Internal Server error" + transErr.message });
+      } else if (transRes.docs.length == 0) {
+        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: [] });
+      } else {
+        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: transRes });
+      }
+    })
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).send({ message: "Internal Server error" + error.message });
+  }
+};
+exports.newArrivalProduct = async (req, res) => {
+  try {
+    let query = {};
+    if (req.query.categoryId) {
+      query.category = req.query.categoryId;
+    }
+    if (req.query.subcategoryId) {
+      query.subcategory = req.query.subcategoryId;
+    }
+    if (req.query.gender) {
+      query.gender = req.query.gender;
+    }
+    if (req.query.color) {
+      query.color = req.query.color;
+    }
+    if (req.query.brand) {
+      query.brand = req.query.brand;
+    }
+    if (req.query.shape) {
+      query.shape = req.query.shape;
+    }
+    if (req.query.style) {
+      query.style = req.query.style;
+    }
+    if (req.query.fromDate && !req.query.toDate) {
+      query.createdAt = { $gte: req.query.fromDate };
+    }
+    if (!req.query.fromDate && req.query.toDate) {
+      query.createdAt = { $lte: req.query.toDate };
+    }
+    if (req.query.fromDate && req.query.toDate) {
+      query.$and = [
+        { createdAt: { $gte: req.query.fromDate } },
+        { createdAt: { $lte: req.query.toDate } },
+      ];
+    }
+    var limit = parseInt(req.query.limit);
+    var options = {
+      page: parseInt(req.query.page) || 1,
+      limit: limit || 1000,
+      sort: { createdAt: -1 },
+      populate: { path: 'category subcategory color gender brand shape style' }
+    }
+    product.paginate(query, options, (transErr, transRes) => {
+      if (transErr) {
+        return res.status(501).send({ message: "Internal Server error" + transErr.message });
+      } else if (transRes.docs.length == 0) {
+        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: [] });
+      } else {
+        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: transRes });
+      }
+    })
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).send({ message: "Internal Server error" + error.message });
+  }
+};
+exports.getOrder = async (req, res, next) => {
+  try {
+    if (req.query.orderStatus != (null || undefined)) {
+      const cart = await userOrders.find({ userId: req.user._id, orderStatus: req.query.orderStatus }).populate('products.productId');
+      if (cart.length == 0) {
+        return res.status(404).json({ message: 'Orders not found for the specified user.' });
+      }
+      return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
+    } else {
+      const cart = await userOrders.find({ userId: req.user._id }).populate('products.productId')
+      if (cart.length == 0) {
+        return res.status(404).json({ message: 'Orders not found for the specified user.' });
+      }
+      return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getOrderById = async (req, res) => {
+  try {
+    const Ads = await userOrders.findById({ _id: req.params.id });
+    if (!Ads) {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+    return res.status(200).json({ status: 200, message: "Data found successfully.", data: Ads })
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.addToCart = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id });
+    if (!cart) {
+      const products = await productModel.findById(req.params.id);
+      if (!products) {
+        return next(new ErrorHander("Product not found", 404));
+      }
+      const newCart = {
+        user: req.user._id,
+        products: [{ productId: products._id, quantity: req.body.quantity }],
+      };
+      const savedCart = await cartModel.create(newCart);
+      return res.status(200).json({ status: 200, message: "Product added to cart successfully", data: savedCart, });
+    } else {
+      const products = await productModel.findById(req.params.id);
+      if (!products) {
+        return next(new ErrorHander("Product not found", 404));
+      }
+      const existingProduct = cart.products.find((item) => item.productId.toString() === products._id.toString());
+      if (existingProduct) {
+        existingProduct.quantity = req.body.quantity;
+      } else {
+        cart.products.push({ productId: products._id, quantity: req.body.quantity });
+      }
+      const savedCart = await cart.save();
+      return res.status(200).json({ status: 200, message: "Product added to cart successfully", data: savedCart, });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getCart = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id }).populate('products.productId');
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found for the specified user.' });
+    }
+    const updatedProducts = cart.products.map((cartProduct) => {
+      const product = cartProduct.productId;
+      const productType = product.type || "product";
+      const priceField = productType === "product" ? "soldPrice" : "price";
+      const mrp = product.price || 0;
+      const netPrice = product[priceField] || 0;
+      let discount = 0;
+      if (mrp > 0) {
+        discount = mrp - netPrice;
+      } else {
+        discount = 0
+      }
+      return {
+        ...cartProduct.toObject(),
+        mrp,
+        netPrice,
+        discount,
+        total: cartProduct.quantity * netPrice,
+      };
+    });
+    const totalPrice = updatedProducts.reduce((total, cartProduct) => {
+      return total + cartProduct.total;
+    }, 0);
+    return res.status(200).json({
+      status: 200,
+      message: "Get cart successfully",
+      data: {
+        cart: { ...cart.toObject(), products: updatedProducts },
+        totalPrice,
+
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.checkout = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id }).populate('products.productId');
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found for the specified user.' });
+    }
+    const updatedProducts = cart.products.map((cartProduct) => {
+      return {
+        productId: cartProduct.productId._id,
+        price: cartProduct.productId.soldPrice || cartProduct.productId.price,
+        discountPrice: 0,
+        quantity: cartProduct.quantity
+      };
+    });
+    const orderTotalAmount = calculateTotalAmount(updatedProducts);
+    let orderId = await reffralCode()
+    const order = new userOrders({ userId: req.user._id, orderId: orderId, products: updatedProducts, orderObjTotalAmount: orderTotalAmount, });
+    await order.save();
+    return res.status(200).json({ message: 'Order placed successfully.' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error during checkout' });
+  }
+}
+exports.successOrder = async (req, res) => {
+  try {
+    let findUserOrder = await userOrders.findOne({ orderId: req.params.orderId });
+    if (findUserOrder) {
+      const user = await User.findById({ _id: findUserOrder.userId });
+      if (!user) {
+        return res.status(404).send({ status: 404, message: "User not found or token expired." });
+      }
+      let update2 = await userOrders.findOneAndUpdate({ orderId: findUserOrder.orderId }, { $set: { orderStatus: "confirmed", paymentStatus: "paid" } }, { new: true });
+      let deleteCart = await cartModel.findOneAndDelete({ user: findUserOrder.userId });
+      if (deleteCart) {
+        return res.status(200).json({ message: "Payment success.", status: 200, data: update2 });
       }
     } else {
-      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+      return res.status(404).json({ message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.cancelOrder = async (req, res) => {
+  try {
+    let findUserOrder = await userOrders.findOne({ orderId: req.params.orderId });
+    if (findUserOrder) {
+      return res.status(201).json({ message: "Payment failed.", status: 201, orderId: req.params.orderId });
+    } else {
+      return res.status(404).json({ message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.getRecentlyView = async (req, res, next) => {
+  try {
+    const cart = await recentlyView.find({ user: req.user._id }).populate({ path: "products" }).sort({ "updateAt": -1 });
+    if (!cart) {
+      return res.status(200).json({ success: false, msg: "No recentlyView", cart: {} });
+    }
+    return res.status(200).json({ success: true, msg: "recentlyView retrieved successfully", cart: cart });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getProductDetails = async (req, res, next) => {
+  try {
+    const product = await productModel.findById(req.params.id);
+    if (!product) {
+      return next(new ErrorHander("Product not found", 404));
+    }
+    const findData = await recentlyView.findOne({ user: req.user._id, products: product._id });
+    if (findData) {
+      const saved = await recentlyView.findByIdAndUpdate({ _id: findData._id }, { $set: { products: product._id } }, { new: true });
+      if (saved) {
+        return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
+      }
+    } else {
+      const saved = await recentlyView.create({ user: req.user._id, products: product._id });
+      if (saved) {
+        return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
+      }
     }
   } catch (err) {
     console.log(err);
     return res.status(501).send({ status: 501, message: "server error.", data: {}, });
   }
 };
+
+
 function calculateTotalAmount(products) {
   let totalAmount = 0;
   products.forEach((product) => {

@@ -10,6 +10,9 @@ const franchise = require("../ModelNew/FranchiseRegistration/franchise");
 const franchiseTestimonial = require("../ModelNew/FranchiseRegistration/franchiseTestimonial");
 const savePower = require("../ModelNew/savePower");
 const helpandSupport = require('../ModelNew/helpAndSupport');
+const notification = require("../ModelNew/notification");
+const Address = require("../ModelNew/Address");
+const transaction = require('../ModelNew/transactionModel');
 exports.socialLogin = async (req, res) => {
   try {
     let userData = await User.findOne({ $or: [{ mobileNumber: req.body.mobileNumber }, { socialId: req.body.socialId }, { socialType: req.body.socialType }] });
@@ -340,6 +343,237 @@ exports.getAllQuery = async (req, res) => {
     return res.status(501).send({ status: 501, message: "server error.", data: {}, });
   }
 };
+exports.createAddress = async (req, res, next) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      if (req.body.default == true) {
+        const findData = await Address.findOne({ user: data._id, default: true });
+        if (findData) {
+          let update = await Address.findByIdAndUpdate({ _id: findData._id }, { $set: { default: false } }, { new: true, });
+        }
+      }
+      req.body.user = data._id;
+      const address = await Address.create(req.body);
+      return res.status(200).json({ message: "Address create successfully.", data: address });
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.getallAddress = async (req, res, next) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      const allAddress = await Address.find({ user: data._id });
+      return res.status(200).json({ message: "Address data found.", data: allAddress });
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.updateAddress = async (req, res, next) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      const data1 = await Address.findById({ _id: req.params.id });
+      if (data1) {
+        if (req.body.default != (null || undefined)) {
+          if (req.body.default == true) {
+            const findData = await Address.findOne({ user: data._id, _id: { $ne: data1._id }, default: true });
+            if (findData) {
+              let update = await Address.findByIdAndUpdate({ _id: findData._id }, { $set: { default: false } }, { new: true, });
+            }
+          }
+        }
+        const newAddressData = req.body;
+        let update = await Address.findByIdAndUpdate({ _id: data1._id }, { $set: newAddressData }, { new: true, });
+        return res.status(200).json({ status: 200, message: "Address update successfully.", data: update });
+      } else {
+        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+      }
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.deleteAddress = async (req, res, next) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      const data1 = await Address.findById({ _id: req.params.id });
+      if (data1) {
+        let update = await Address.findByIdAndDelete(data1._id);
+        return res.status(200).json({ status: 200, message: "Address Deleted Successfully", });
+      } else {
+        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+      }
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.getAddressbyId = async (req, res, next) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      const data1 = await Address.findById({ _id: req.params.id });
+      if (data1) {
+        return res.status(200).json({ status: 200, message: "Address found successfully.", data: data1 });
+      } else {
+        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+      }
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.addMoney = async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate({ _id: req.user._id }, { $inc: { wallet: parseInt(req.body.balance) } }, { new: true });
+    if (updatedUser) {
+      const transactionData = {
+        user: req.user._id,
+        date: Date.now(),
+        amount: req.body.balance,
+        type: "Credit",
+      };
+      const createdTransaction = await transaction.create(transactionData);
+      const welcomeMessage = `Welcome, ${updatedUser.fullName}! Thank you for adding money to your wallet.`;
+      const welcomeNotification = new notification({ recipient: updatedUser._id, content: welcomeMessage, type: 'welcome', });
+      await welcomeNotification.save();
+      return res.status(200).json({ status: 200, message: "Money has been added.", data: updatedUser, });
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {}, });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      status: 500,
+      message: "Server error.",
+      data: {},
+    });
+  }
+};
+exports.removeMoney = async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate({ _id: req.user._id }, { $inc: { wallet: -parseInt(req.body.balance) } }, { new: true });
+    if (updatedUser) {
+      const transactionData = {
+        user: req.user._id,
+        date: Date.now(),
+        amount: req.body.balance,
+        type: "Debit",
+      };
+      const createdTransaction = await transaction.create(transactionData);
+      const welcomeMessage = `Welcome, ${updatedUser.fullName}! Money has been deducted from your wallet.`;
+      const welcomeNotification = new notification({
+        recipient: updatedUser._id,
+        content: welcomeMessage,
+        type: 'welcome',
+      });
+      await welcomeNotification.save();
+      return res.status(200).json({
+        status: 200,
+        message: "Money has been deducted.",
+        data: updatedUser,
+      });
+    } else {
+      return res.status(404).json({
+        status: 404,
+        message: "No data found",
+        data: {},
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      status: 500,
+      message: "Server error.",
+      data: {},
+    });
+  }
+};
+exports.getWallet = async (req, res) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, });
+    if (data) {
+      let obj = { wallet: data.wallet, esCash: data.esCash, }
+      return res.status(200).json({ status: 200, message: "get wallet", data: obj });
+    } else {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.allTransactionUser = async (req, res) => {
+  try {
+    const data = await transaction.find({ user: req.user._id }).populate("user");
+    if (data.length == 0) {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+    return res.status(200).json({ status: 200, message: "transaction retrieved successfully ", data: data });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.allcreditTransactionUser = async (req, res) => {
+  try {
+    const data = await transaction.find({ user: req.user._id, type: "Credit" });
+    if (data.length == 0) {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+    return res.status(200).json({ status: 200, message: "transaction retrieved successfully ", data: data });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.allDebitTransactionUser = async (req, res) => {
+  try {
+    const data = await transaction.find({ user: req.user._id, type: "Debit" });
+    if (data.length == 0) {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+    return res.status(200).json({ status: 200, message: "transaction retrieved successfully ", data: data });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.transferAllEcashToWallet = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).send({ status: 404, message: "user not found ", data: {}, });
+    } else {
+      let cash = user.esCash;
+      let update = await User.findByIdAndUpdate({ _id: user._id }, { $set: { wallet: user.wallet + cash, esCash: 0 } }, { new: true });
+      return res.status(200).send({ status: 200, message: "Ecash transfer to wallet ", data: update, });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
 const reffralCode = async () => {
   var digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let OTP = '';

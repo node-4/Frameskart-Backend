@@ -79,4 +79,21 @@ module.exports = (app) => {
         app.get("/api/v1/admin/getEyeTestCampById/:id", auth.getEyeTestCampById);
         app.delete("/api/v1/admin/deleteEyeTestCamp/:id", [authJwt.verifyToken], auth.deleteEyeTestCamp);
         app.get("/api/v1/admin/getAllEyeTestCampFormData", auth.getAllEyeTestCampFormData);
+        app.post("/api/v1/admin/ColorGender/addColorGender", [authJwt.verifyToken], auth.createColorGender);
+        app.get("/api/v1/admin/ColorGender/allColorGender", auth.getColorGender);
+        app.get("/api/v1/admin/ColorGender/getColorGenderBytype/:type", auth.getColorGenderBytype);
+        app.put("/api/v1/admin/ColorGender/updateColorGender/:id", [authJwt.verifyToken], auth.updateColorGender);
+        app.delete("/api/v1/admin/ColorGender/deleteColorGender/:id", [authJwt.verifyToken], auth.removeColorGender);
+        app.post("/api/v1/admin/Shape/addShape", [authJwt.verifyToken], upload.single('image'), auth.AddShape);
+        app.get("/api/v1/admin/Shape/allShape", auth.getShape);
+        app.put("/api/v1/admin/Shape/updateShape/:id", [authJwt.verifyToken], upload.single('image'), auth.updateShape);
+        app.delete("/api/v1/admin/Shape/deleteShape/:id", [authJwt.verifyToken], auth.removeShape);
+        app.post("/api/v1/admin/Style/AddStyle", [authJwt.verifyToken], upload.single('image'), auth.AddStyle);
+        app.get("/api/v1/admin/Style/allStyle", auth.getStyle);
+        app.put("/api/v1/admin/Style/updateStyle/:id", [authJwt.verifyToken], upload.single('image'), auth.updateStyle);
+        app.delete("/api/v1/admin/Style/deleteStyle/:id", [authJwt.verifyToken], auth.removeStyle);
+        app.delete("/api/v1/admin/deleteUser/:id", [authJwt.verifyToken], auth.deleteUser);
+        app.get("/api/v1/admin/getuserById/:id", auth.getuserById);
+        app.get("/api/v1/admin/getAlluser", auth.getAlluser);
+        app.post("/api/v1/admin/addFcash/:id", [authJwt.verifyToken], auth.addFcash);
 }
