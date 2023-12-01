@@ -1,6 +1,7 @@
 const auth = require("../ControllerNew/adminController");
 const { upload, FranchiseUpload, productUpload, brandUpload } = require('../middlewareNew/imageupload')
 const authJwt = require("../middlewareNew/authJwt");
+const visionTest = require("../ModelNew/visionTest/visionTest");
 module.exports = (app) => {
         app.post("/api/v1/admin/registration", auth.registration);
         app.post("/api/v1/admin/signin", auth.signin);
@@ -96,4 +97,11 @@ module.exports = (app) => {
         app.get("/api/v1/admin/getuserById/:id", auth.getuserById);
         app.get("/api/v1/admin/getAlluser", auth.getAlluser);
         app.post("/api/v1/admin/addFcash/:id", [authJwt.verifyToken], auth.addFcash);
+        app.post("/api/v1/admin/AddVisionTest", [authJwt.verifyToken], upload.single('image'), auth.AddVisionTest);
+        app.get("/api/v1/admin/getAllVisionTest", auth.getVisionTest);
+        app.put("/api/v1/admin/updateVisionTest/:id", [authJwt.verifyToken], upload.single('image'), auth.updateVisionTest);
+        app.delete("/api/v1/admin/deleteVisionTest/:id", [authJwt.verifyToken], auth.removeVisionTest);
+        app.put("/api/v1/admin/addInstructionInVisionTest/:visionTestId", upload.single('image'), [authJwt.verifyToken], auth.addInstructionInVisionTest);
+        app.delete("/api/v1/admin/deleteInstructionInVisionTest/:id/:visionTestId", [authJwt.verifyToken], auth.deleteInstructionInVisionTest);
+
 }

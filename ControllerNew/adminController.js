@@ -16,6 +16,7 @@ const userOrders = require("../ModelNew/userOrders");
 const franchiseInquiry = require("../ModelNew/FranchiseRegistration/franchiseInquiry");
 const franchise = require("../ModelNew/FranchiseRegistration/franchise");
 const franchiseTestimonial = require("../ModelNew/FranchiseRegistration/franchiseTestimonial");
+const visionTest = require("../ModelNew/visionTest/visionTest");
 exports.registration = async (req, res) => {
         const { mobileNumber, email } = req.body;
         try {
@@ -1673,5 +1674,122 @@ exports.addFcash = async (req, res) => {
                 return res.status(404).json({ message: "Data not Found", status: 404, data: {}, });
         } catch (error) {
                 return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.AddVisionTest = async (req, res) => {
+        try {
+                let findVisionTest = await visionTest.findOne({ name: req.body.name });
+                if (findVisionTest) {
+                        if (req.file) {
+                                req.body.image = req.file.path
+                        } else {
+                                req.body.image = findVisionTest.image;
+                        }
+                        const data = { name: req.body.name, image: req.body.image, };
+                        const Saved = await visionTest.findByIdAndUpdate({ _id: findVisionTest._id }, { $set: data }, { new: true });
+                        return res.status(200).json({ message: "VisionTest add successfully.", status: 200, data: Saved });
+                } else {
+                        if (req.file) {
+                                req.body.image = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
+                        }
+                        const data = { name: req.body.name, image: req.body.image };
+                        const Saved = await visionTest.create(data);
+                        return res.status(200).json({ message: "VisionTest add successfully.", status: 200, data: Saved });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getVisionTest = async (req, res) => {
+        try {
+                const findVisionTest = await visionTest.find();
+                if (findVisionTest.length > 0) {
+                        return res.status(200).json({ status: 200, data: findVisionTest });
+                } else {
+                        return res.status(404).json({ message: "VisionTest not found.", status: 200, data: {} });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.updateVisionTest = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const findVisionTest = await visionTest.findById(id);
+                if (!findVisionTest) {
+                        return res.status(404).json({ message: "VisionTest Not Found", status: 404, data: {} });
+                }
+                if (req.file) {
+                        findVisionTest.image = req.file.path
+                } else {
+                        findVisionTest.image = findVisionTest.image;
+                }
+                findVisionTest.name = req.body.name;
+                let update = await findVisionTest.save();
+                return res.status(200).json({ message: "Updated Successfully", status: 200, data: update });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.removeVisionTest = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const findVisionTest = await visionTest.findById(id);
+                if (!findVisionTest) {
+                        return res.status(404).json({ message: "VisionTest Not Found", status: 404, data: {} });
+                } else {
+                        await visionTest.findByIdAndDelete(findVisionTest._id);
+                        return res.status(200).json({ message: "VisionTest Deleted Successfully !" });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.addInstructionInVisionTest = async (req, res) => {
+        try {
+                const { name, image } = req.body;
+                let findBanner = await visionTest.findOne({ _id: req.params.visionTestId });
+                if (findBanner) {
+                        if (req.file) {
+                                req.body.image = req.file.path;
+                        }
+                        let data = {
+                                name: name,
+                                image: req.body.image
+                        }
+                        const newCategory = await visionTest.findByIdAndUpdate({ _id: findBanner._id }, { $push: { instruction: data } }, { new: true });
+                        return res.status(200).json({ status: 200, message: 'Vision test update successfully', data: newCategory });
+                } else {
+                        return res.status(200).json({ status: 200, message: 'Vision test not found.', data: {} });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Failed to create Vision test' });
+        }
+};
+exports.deleteInstructionInVisionTest = async (req, res) => {
+        try {
+                let findCart = await visionTest.findOne({ _id: req.params.visionTestId });
+                if (findCart) {
+                        for (let i = 0; i < findCart.instruction.length; i++) {
+                                if (findCart.instruction.length > 1) {
+                                        if (((findCart.instruction[i]._id).toString() == req.params.id) == true) {
+                                                let updateCart = await visionTest.findByIdAndUpdate({ _id: findCart._id, 'instruction._id': req.params.id }, { $pull: { 'instruction': { _id: req.params.id, name: findCart.instruction[i].name, image: findCart.instruction[i].image, } } }, { new: true })
+                                                if (updateCart) {
+                                                        return res.status(200).send({ message: "User delete from Vision test.", data: updateCart, });
+                                                }
+                                        }
+                                } else {
+                                        return res.status(200).send({ status: 200, message: "No Data Found ", data: [] });
+                                }
+                        }
+                } else {
+                        return res.status(200).send({ status: 200, message: "No Data Found ", cart: [] });
+                }
+        } catch (error) {
+                console.log("353====================>", error)
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
