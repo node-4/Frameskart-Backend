@@ -7,6 +7,7 @@ const colorGender = require("../ModelNew/colorGender");
 const ContactDetail = require("../ModelNew/contactDetails");
 const eyeTestCamp = require("../ModelNew/eyeTestCamp");
 const Faq = require('../ModelNew/faq')
+const frame = require('../ModelNew/frame')
 const Guide = require("../ModelNew/Guides/guide")
 const notification = require("../ModelNew/notification");
 const recommendeYoutube = require("../ModelNew/recommende&youtubeCornerByBanner");
@@ -22,6 +23,11 @@ const franchiseTestimonial = require("../ModelNew/FranchiseRegistration/franchis
 const visionTest = require("../ModelNew/visionTest/visionTest");
 const visionTestQuestion = require("../ModelNew/visionTest/visionTestQuestion");
 const Subscription = require("../ModelNew/subscription");
+const lens = require("../ModelNew/Lens/lens");
+const powerTypeCategory = require("../ModelNew/Lens/powerTypeCategory");
+const powerTypeSubCategory = require("../ModelNew/Lens/powerTypeSubCategory");
+const product = require("../ModelNew/productModel");
+
 exports.registration = async (req, res) => {
         const { mobileNumber, email } = req.body;
         try {
@@ -526,13 +532,13 @@ exports.getOrder = async (req, res, next) => {
                         if (cart.length == 0) {
                                 return res.status(404).json({ message: 'Orders not found for the specified user.' });
                         }
-                        return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
+                        return res.status(200).json({ status: 200, msg: "Orders retrieved successfully", data: cart });
                 } else {
                         const cart = await userOrders.find({ orderStatus: "confirmed" }).populate('products.productId')
                         if (cart.length == 0) {
                                 return res.status(404).json({ message: 'Orders not found for the specified user.' });
                         }
-                        return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
+                        return res.status(200).json({ status: 200, msg: "Orders retrieved successfully", data: cart });
                 }
         } catch (error) {
                 console.error(error);
@@ -733,7 +739,7 @@ exports.getCategories = async (req, res) => {
         try {
                 const updateOffer = await Category.find();
                 if (updateOffer.length > 0) {
-                        return res.status(200).json({ success: true, Category: updateOffer });
+                        return res.status(200).json({ status: 200, message: "Category found.", Category: updateOffer });
                 } else {
                         return res.status(404).json({ message: "Category not found.", status: 200, data: {} });
                 }
@@ -778,7 +784,7 @@ exports.getMainCategories = async (req, res) => {
         try {
                 const updateOffer = await Category.find({ type: "Main" });
                 if (updateOffer.length > 0) {
-                        return res.status(200).json({ success: true, Category: updateOffer });
+                        return res.status(200).json({ status: 200, message: "Category found.", Category: updateOffer });
                 } else {
                         return res.status(404).json({ message: "Category not found.", status: 200, data: {} });
                 }
@@ -790,7 +796,7 @@ exports.getFramesKartSmartSeriesCategories = async (req, res) => {
         try {
                 const updateOffer = await Category.find({ type: "FramesKartSmartSeries" });
                 if (updateOffer.length > 0) {
-                        return res.status(200).json({ success: true, Category: updateOffer });
+                        return res.status(200).json({ status: 200, message: "Category found.", Category: updateOffer });
                 } else {
                         return res.status(404).json({ message: "Category not found.", status: 200, data: {} });
                 }
@@ -802,7 +808,7 @@ exports.getPremiumEyeWearCategories = async (req, res) => {
         try {
                 const updateOffer = await Category.find({ type: "PremiumEyeWear" });
                 if (updateOffer.length > 0) {
-                        return res.status(200).json({ success: true, Category: updateOffer });
+                        return res.status(200).json({ status: 200, message: "Category found.", Category: updateOffer });
                 } else {
                         return res.status(404).json({ message: "Category not found.", status: 200, data: {} });
                 }
@@ -814,7 +820,7 @@ exports.getPremiumLensCategories = async (req, res) => {
         try {
                 const updateOffer = await Category.find({ type: "PremiumLens" });
                 if (updateOffer.length > 0) {
-                        return res.status(200).json({ success: true, Category: updateOffer });
+                        return res.status(200).json({ status: 200, message: "Category found.", Category: updateOffer });
                 } else {
                         return res.status(404).json({ message: "Category not found.", status: 200, data: {} });
                 }
@@ -826,7 +832,7 @@ exports.getFramesKartSeriesCategories = async (req, res) => {
         try {
                 const updateOffer = await Category.find({ type: "FramesKartSeries" });
                 if (updateOffer.length > 0) {
-                        return res.status(200).json({ success: true, Category: updateOffer });
+                        return res.status(200).json({ status: 200, message: "Category found.", Category: updateOffer });
                 } else {
                         return res.status(404).json({ message: "Category not found.", status: 200, data: {} });
                 }
@@ -855,7 +861,7 @@ exports.getSubcategories = async (req, res) => {
         try {
                 const updateOffer = await Subcategory.find();
                 if (updateOffer.length > 0) {
-                        return res.status(200).json({ success: true, message: "Subcategory found.", Subcategory: updateOffer });
+                        return res.status(200).json({ status: 200, message: "Subcategory found.", Subcategory: updateOffer });
                 } else {
                         return res.status(404).json({ message: "Subcategory not found.", status: 200, data: {} });
                 }
@@ -1123,8 +1129,13 @@ exports.createBrand = async (req, res) => {
 };
 exports.getBrand = async (req, res) => {
         try {
+
                 const brand = await Brand.find({});
-                return res.status(201).json({ success: true, brand, });
+                if (brand.length > 0) {
+                        return res.status(200).json({ status: 200, message: "Brand found.", data: brand });
+                } else {
+                        return res.status(404).json({ status: 404, message: "Brand not found.", data: {} });
+                }
         } catch (error) {
                 return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
         }
@@ -1524,7 +1535,7 @@ exports.getShape = async (req, res) => {
         try {
                 const findShape = await shape.find({ type: "shape" });
                 if (findShape.length > 0) {
-                        return res.status(200).json({ success: true, data: findShape });
+                        return res.status(200).json({ status: 200, message: "shape found.", data: findShape });
                 } else {
                         return res.status(404).json({ message: "Shape not found.", status: 200, data: {} });
                 }
@@ -1590,9 +1601,9 @@ exports.getStyle = async (req, res) => {
         try {
                 const findShape = await shape.find({ type: "style" });
                 if (findShape.length > 0) {
-                        return res.status(200).json({ success: true, data: findShape });
+                        return res.status(200).json({ status: 200, message: "Style found.", data: findShape });
                 } else {
-                        return res.status(404).json({ message: "style not found.", status: 200, data: {} });
+                        return res.status(404).json({ message: "style not found.", status: 404, data: {} });
                 }
         } catch (error) {
                 return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
@@ -2149,7 +2160,7 @@ exports.getOffer = async (req, res) => {
         try {
                 const updateOffer = await offer.find();
                 if (updateOffer.length > 0) {
-                        return res.status(200).json({ success: true, Offer: updateOffer });
+                        return res.status(200).json({ status: 200, message: "Offer found.", data: updateOffer });
                 } else {
                         return res.status(404).json({ message: "Offer not found.", status: 200, data: {} });
                 }
@@ -2186,6 +2197,356 @@ exports.removeOffer = async (req, res) => {
                 } else {
                         await offer.findByIdAndDelete(updateOffer._id);
                         return res.status(200).json({ message: "Offer Deleted Successfully !" });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.createPowerTypeCategory = async (req, res) => {
+        try {
+                let findCategory = await powerTypeCategory.findOne({ name: req.body.name, });
+                if (findCategory) {
+                        return res.status(409).json({ message: "Power Type Category already exit.", status: 404, data: {} });
+                } else {
+                        if (req.file) {
+                                req.body.image = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
+                        }
+                        const data = { name: req.body.name, image: req.body.image, };
+                        const category = await powerTypeCategory.create(data);
+                        return res.status(200).json({ message: "Power Type Category add successfully.", status: 200, data: category });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getPowerTypeCategories = async (req, res) => {
+        try {
+                const updateOffer = await powerTypeCategory.find();
+                if (updateOffer.length > 0) {
+                        return res.status(200).json({ status: 200, message: "Power Type category found.", data: updateOffer });
+                } else {
+                        return res.status(404).json({ message: "Power Type Category not found.", status: 200, data: {} });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.updatePowerTypeCategory = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const updateOffer = await powerTypeCategory.findById(id);
+                if (!updateOffer) {
+                        return res.status(404).json({ message: "Power Type Category Not Found", status: 404, data: {} });
+                }
+                if (req.file) {
+                        updateOffer.image = req.file.path
+                } else {
+                        updateOffer.image = offer.image;
+                }
+                updateOffer.name = req.body.name;
+                let update = await updateOffer.save();
+                return res.status(200).json({ message: "Updated Successfully", status: 200, data: update });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.removePowerTypeCategory = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const updateOffer = await powerTypeCategory.findById(id);
+                if (!updateOffer) {
+                        return res.status(404).json({ message: "Power Type Category Not Found", status: 404, data: {} });
+                } else {
+                        await powerTypeCategory.findByIdAndDelete(updateOffer._id);
+                        return res.status(200).json({ message: "Power Type Category Deleted Successfully !" });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.createPowerTypeSubcategory = async (req, res) => {
+        try {
+                let findSubcategory = await powerTypeSubCategory.findOne({ name: req.body.name });
+                if (findSubcategory) {
+                        return res.status(409).json({ message: "Power Type Subcategory already exit.", status: 404, data: {} });
+                } else {
+                        const data = { name: req.body.name, categoryId: req.body.categoryId };
+                        const subcategory = await powerTypeSubCategory.create(data);
+                        return res.status(200).json({ message: "Power Type Subcategory add successfully.", status: 200, data: subcategory });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getPowerTypeSubcategories = async (req, res) => {
+        try {
+                const updateOffer = await powerTypeSubCategory.find();
+                if (updateOffer.length > 0) {
+                        return res.status(200).json({ status: 200, message: "Power Type Subcategory found.", Subcategory: updateOffer });
+                } else {
+                        return res.status(404).json({ message: "Power Type Subcategory not found.", status: 200, data: {} });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.updatePowerTypeSubcategory = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const updateOffer = await powerTypeSubCategory.findById(id);
+                if (!updateOffer) {
+                        return res.status(404).json({ message: "Power Type Subcategory Not Found", status: 404, data: {} });
+                }
+                if (req.body.categoryId != (null || undefined)) {
+                        const updateOffer1 = await Category.findById({ _id: req.body.categoryId });
+                        if (!updateOffer1) {
+                                return res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
+                        }
+                        updateOffer.categoryId = updateOffer1._id;
+                } else {
+                        updateOffer.categoryId = updateOffer.categoryId;
+                }
+                updateOffer.name = req.body.name || updateOffer.name;
+                updateOffer.categoryId = req.body.categoryId || updateOffer.categoryId;
+                let update = await updateOffer.save();
+                return res.status(200).json({ message: "Updated Successfully", status: 200, data: update });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.removePowerTypeSubcategory = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const updateOffer = await powerTypeSubCategory.findById(id);
+                if (!updateOffer) {
+                        return res.status(404).json({ message: "Power Type Subcategory Not Found", status: 404, data: {} });
+                } else {
+                        await powerTypeSubCategory.findByIdAndDelete(updateOffer._id);
+                        return res.status(200).json({ message: "Power Type Subcategory Deleted Successfully !" });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getPowerTypeSubcategoryByCategory = async (req, res) => {
+        try {
+                const categoryId = req.params.categoryId;
+                const subcategories = await powerTypeSubCategory.find({ categoryId: categoryId });
+                if (subcategories.length == 0) {
+                        return res.status(404).json({ message: "Power Type Subcategory Not Found", status: 404, data: {} });
+                } else {
+                        return res.status(200).json({ message: "Power Type Subcategory Data  Successfully !", status: 200, data: subcategories });
+                }
+        } catch (error) {
+                return res.status(500).json({ success: false, error: 'Internal server error' });
+        }
+};
+exports.AddFrame = async (req, res) => {
+        try {
+                let findShape = await frame.findOne({ name: req.body.name });
+                if (findShape) {
+                        return res.status(409).json({ message: "frame already exit.", status: 404, data: {} });
+                } else {
+                        if (req.file) {
+                                console.log(req.file);
+                                req.body.image = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
+                        }
+                        const data = { name: req.body.name, image: req.body.image };
+                        const shape1 = await frame.create(data);
+                        return res.status(200).json({ message: "frame add successfully.", status: 200, data: shape1 });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getFrame = async (req, res) => {
+        try {
+                const findShape = await frame.find({})
+                if (findShape.length > 0) {
+                        return res.status(200).json({ status: 200, message: "Frame found.", data: findShape });
+                } else {
+                        return res.status(404).json({ message: "frame not found.", status: 404, data: {} });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.updateFrame = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const findShape = await frame.findById(id);
+                if (!findShape) {
+                        return res.status(404).json({ message: "frame Not Found", status: 404, data: {} });
+                }
+                if (req.file) {
+                        findShape.image = req.file.path
+                } else {
+                        findShape.image = shape.image;
+                }
+                findShape.name = req.body.name || findShape.name;
+                findShape.type = findShape.type;
+                let update = await findShape.save();
+                return res.status(200).json({ message: "Updated Successfully", status: 200, data: update });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.removeFrame = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const findShape = await frame.findById(id);
+                if (!findShape) {
+                        return res.status(404).json({ message: "frame Not Found", status: 404, data: {} });
+                } else {
+                        await frame.findByIdAndDelete(findShape._id);
+                        return res.status(200).json({ message: "frame Deleted Successfully !" });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.createLens = async (req, res) => {
+        try {
+                const { logoImage, name, powerTypeCategoryId, powerTypeSubCategoryId, frameId, productId, feature, coating, price, topSelling, withInDay } = req.body;
+                let findPowerTypeCategory = await powerTypeCategory.findOne({ _id: powerTypeCategoryId });
+                if (!findPowerTypeCategory) {
+                        return res.status(404).json({ message: "PowerType Category not found.", status: 400, data: {} });
+                }
+                let findPowerTypeSubCategory = await powerTypeSubCategory.findOne({ _id: powerTypeSubCategoryId });
+                if (!findPowerTypeSubCategory) {
+                        return res.status(404).json({ message: "PowerType sub Category not found.", status: 400, data: {} });
+                }
+                let findProduct = await product.findOne({ _id: productId });
+                if (!findProduct) {
+                        return res.status(404).json({ message: "Product not found.", status: 400, data: {} });
+                }
+                let findFrame = await frame.findOne({ _id: frameId });
+                if (!findFrame) {
+                        return res.status(404).json({ message: "Frame not found.", status: 400, data: {} });
+                }
+                if (req.file) {
+                        req.body.logoImage = req.file.path
+                }
+                let obj = {
+                        logoImage: req.body.logoImage,
+                        name: name,
+                        powerTypeCategoryId: powerTypeCategoryId,
+                        powerTypeSubCategoryId: powerTypeSubCategoryId,
+                        frameId: frameId,
+                        productId: productId,
+                        feature: feature,
+                        coating: coating,
+                        price: price,
+                        topSelling: topSelling,
+                        withInDay: withInDay
+                }
+                const subcategory = await lens.create(obj);
+                return res.status(200).json({ message: "Lens add successfully.", status: 200, data: subcategory });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+}
+exports.updateLens = async (req, res) => {
+        try {
+                const { lensId } = req.params;
+                const { name, feature, coating, price, topSelling, withInDay } = req.body;
+                let powerTypeCategoryId, powerTypeSubCategoryId, frameId, productId;
+                let findLens = await lens.findOne({ _id: lensId });
+                if (!findLens) {
+                        return res.status(404).json({ message: "Lens not found.", status: 404, data: {} });
+                }
+                if (req.body.powerTypeCategoryId != (null || undefined)) {
+                        let findPowerTypeCategory = await powerTypeCategory.findOne({ _id: req.body.powerTypeCategoryId });
+                        if (!findPowerTypeCategory) {
+                                return res.status(404).json({ message: "PowerType Category not found.", status: 400, data: {} });
+                        }
+                } else {
+                        powerTypeCategoryId = findLens.powerTypeCategoryId
+                }
+                if (req.body.powerTypeSubCategoryId != (null || undefined)) {
+                        let findPowerTypeSubCategory = await powerTypeSubCategory.findOne({ _id: req.body.powerTypeSubCategoryId });
+                        if (!findPowerTypeSubCategory) {
+                                return res.status(404).json({ message: "PowerType sub Category not found.", status: 400, data: {} });
+                        }
+                } else {
+                        powerTypeSubCategoryId = findLens.powerTypeSubCategoryId
+                }
+                if (req.body.productId != (null || undefined)) {
+                        let findProduct = await product.findOne({ _id: req.body.productId });
+                        if (!findProduct) {
+                                return res.status(404).json({ message: "Product not found.", status: 400, data: {} });
+                        }
+                } else {
+                        productId = findLens.productId;
+                }
+                if (req.body.frameId != (null || undefined)) {
+                        let findFrame = await frame.findOne({ _id: req.body.frameId });
+                        if (!findFrame) {
+                                return res.status(404).json({ message: "Frame not found.", status: 400, data: {} });
+                        }
+                } else {
+                        frameId = findLens.frameId
+                }
+                if (req.file) {
+                        req.body.logoImage = req.file.path;
+                }
+                findLens.logoImage = req.body.logoImage || findLens.logoImage;
+                findLens.name = name || findLens.name;
+                findLens.powerTypeCategoryId = powerTypeCategoryId;
+                findLens.powerTypeSubCategoryId = powerTypeSubCategoryId;
+                findLens.frameId = frameId;
+                findLens.productId = productId;
+                findLens.feature = feature || findLens.feature;
+                findLens.coating = coating || findLens.coating;
+                findLens.price = price || findLens.price;
+                findLens.topSelling = topSelling || findLens.topSelling;
+                findLens.withInDay = withInDay || findLens.withInDay;
+                const updatedLens = await findLens.save();
+                return res.status(200).json({ message: "Lens updated successfully.", status: 200, data: updatedLens });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "Internal server error.", data: error.message });
+        }
+};
+exports.getLens = async (req, res) => {
+        try {
+                const { powerTypeCategoryId, powerTypeSubCategoryId, frameId, productId, topSelling } = req.query;
+                const filter = {};
+                if (powerTypeCategoryId) {
+                        filter.powerTypeCategoryId = powerTypeCategoryId;
+                }
+                if (powerTypeSubCategoryId) {
+                        filter.powerTypeSubCategoryId = powerTypeSubCategoryId;
+                }
+                if (frameId) {
+                        filter.frameId = frameId;
+                }
+                if (productId) { filter.productId = productId; }
+                if (topSelling !== undefined) {
+                        filter.topSelling = topSelling === 'true';
+                }
+                const filteredLens = await lens.find(filter);
+                if (filteredLens.length > 0) {
+                        return res.status(200).json({ message: "Lens found successfully.", status: 200, data: filteredLens });
+                } else {
+                        return res.status(404).json({ message: "Lens not found.", status: 404, data: {} });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "Internal server error", data: error.message });
+        }
+};
+exports.removeLens = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const updateOffer = await lens.findById(id);
+                if (!updateOffer) {
+                        return res.status(404).json({ message: "Lens Not Found", status: 404, data: {} });
+                } else {
+                        await lens.findByIdAndDelete(updateOffer._id);
+                        return res.status(200).json({ message: "Lens Deleted Successfully !" });
                 }
         } catch (error) {
                 return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });

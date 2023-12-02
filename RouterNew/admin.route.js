@@ -126,5 +126,19 @@ module.exports = (app) => {
         app.post('/api/v1/offer', [authJwt.verifyToken], upload.single('image'), auth.AddOffer);
         app.get('/api/v1/offer', auth.getOffer);
         app.put('/api/v1/offer/updateOffer/:id', [authJwt.verifyToken], upload.single('image'), auth.updateOffer);
-        app.delete('/api/v1/offer/:id', auth.removeOffer)
+        app.delete('/api/v1/offer/:id', auth.removeOffer);
+        app.post("/api/v1/lens/createPowerTypeCategory", [authJwt.verifyToken], upload.single('image'), auth.createPowerTypeCategory);
+        app.get("/api/v1/lens/allPowerTypeCategory", auth.getPowerTypeCategories);
+        app.put("/api/v1/lens/updatePowerTypeCategory/:id", [authJwt.verifyToken], upload.single('image'), auth.updatePowerTypeCategory);
+        app.delete("/api/v1/lens/removePowerTypeCategory/:id", [authJwt.verifyToken], auth.removePowerTypeCategory);
+        app.post("/api/v1/lens/createPowerTypeSubcategory", [authJwt.verifyToken], upload.single('image'), auth.createPowerTypeSubcategory);
+        app.get("/api/v1/lens/allsubcategory", auth.getPowerTypeSubcategories);
+        app.put("/api/v1/lens/updatesubcategory/:id", [authJwt.verifyToken], upload.single('image'), auth.updatePowerTypeSubcategory);
+        app.delete("/api/v1/lens/removesubcategory/:id", [authJwt.verifyToken], auth.removePowerTypeSubcategory);
+        app.get("/api/v1/lens/subcategory/:categoryId", auth.getPowerTypeSubcategoryByCategory);
+        app.post("/api/v1/admin/Frame/AddFrame", [authJwt.verifyToken], upload.single('image'), auth.AddFrame);
+        app.get("/api/v1/admin/Frame/allFrame", auth.getFrame);
+        app.put("/api/v1/admin/Frame/updateFrame/:id", [authJwt.verifyToken], upload.single('image'), auth.updateFrame);
+        app.delete("/api/v1/admin/Frame/deleteFrame/:id", [authJwt.verifyToken], auth.removeFrame);
+
 }
