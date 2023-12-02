@@ -13,6 +13,8 @@ const helpandSupport = require('../ModelNew/helpAndSupport');
 const notification = require("../ModelNew/notification");
 const Address = require("../ModelNew/Address");
 const transaction = require('../ModelNew/transactionModel');
+const visionTestQuestion = require("../ModelNew/visionTest/visionTestQuestion");
+const Subscription = require("../ModelNew/subscription");
 exports.socialLogin = async (req, res) => {
   try {
     let userData = await User.findOne({ $or: [{ mobileNumber: req.body.mobileNumber }, { socialId: req.body.socialId }, { socialType: req.body.socialType }] });
@@ -574,6 +576,237 @@ exports.transferAllEcashToWallet = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 }
+exports.giveAnswerVisionTest = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).send({ status: 404, message: "User not found", data: {} });
+    } else {
+      const visionTestId = req.params.visionTestId;
+      const userAnswers = req.body.userAnswers;
+      const questions = await visionTestQuestion.find({ visionTestId });
+      if (userAnswers.length !== questions.length) {
+        return res.status(400).json({ status: 400, message: "Invalid number of answers provided." });
+      }
+      const correctAnswers = questions.reduce((acc, question, index) => {
+        let x = index;
+        let a = ((question.answer == req.body.userAnswers[x].userAnswer) ? 1 : 0);
+        return acc + a;
+      }, 0);
+      const totalQuestions = questions.length;
+      const percentage = (correctAnswers / totalQuestions) * 100;
+      return res.status(200).json({ status: 200, message: "Correct answer percentage.", data: Number(percentage.toFixed(2)), });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+exports.getSubscription = async (req, res) => {
+  try {
+    const findSubscription = await Subscription.find();
+    return res.status(200).json({ status: 200, message: "Subscription detail successfully.", data: findSubscription });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+exports.getSubscriptionApp = async (req, res) => {
+  try {
+    const data = await User.findOne({ _id: req.user._id, isSubscription: true });
+    if (data) {
+      const findSubscription = await Subscription.find();
+      const modifiedSubscriptions = findSubscription.map(sub => {
+        return {
+          ...sub.toObject(),
+          isUserSubscribed: sub._id.equals(data.subscriptionId),
+        };
+      });
+      return res.status(200).json({ status: 200, message: "Subscription detail successfully.", data: modifiedSubscriptions, });
+    } else {
+      const findSubscription = await Subscription.find();
+      const modifiedSubscriptions = findSubscription.map(sub => {
+        return {
+          ...sub.toObject(),
+          isUserSubscribed: false,
+        };
+      });
+      return res.status(200).json({ status: 200, message: "Subscription detail successfully.", data: modifiedSubscriptions, });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+exports.takeSubscription = async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.user._id, });
+    if (!user) {
+      return res.status(404).send({ status: 404, message: "User not found" });
+    } else {
+      let id = req.params.id;
+      const findSubscription = await Subscription.findById(id);
+      if (findSubscription) {
+        const findTransaction = await transaction.findOne({ user: user._id, type: "Subscription", Status: "pending" });
+        if (findTransaction) {
+          let deleteData = await transaction.findByIdAndDelete({ _id: findTransaction._id })
+          let obj = {
+            user: user._id,
+            subscriptionId: findSubscription._id,
+            amount: findSubscription.price,
+            paymentMode: req.body.paymentMode,
+            type: "Subscription",
+            Status: "pending",
+          }
+          let update = await transaction.create(obj);
+          if (update) {
+            return res.status(200).send({ status: 200, message: "update successfully.", data: update });
+          }
+        } else {
+          let obj = {
+            user: user._id,
+            subscriptionId: findSubscription._id,
+            amount: findSubscription.price,
+            paymentMode: req.body.paymentMode,
+            type: "Subscription",
+            Status: "pending",
+          }
+          let update = await transaction.create(obj);
+          if (update) {
+            return res.status(200).send({ status: 200, message: "update successfully.", data: update });
+          }
+        }
+      } else {
+        return res.status(404).send({ status: 404, message: "Subscription not found" });
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ status: 500, message: "Server error" + error.message });
+  }
+};
+exports.takeSubscriptionFromWebsite = async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.user._id, });
+    if (!user) {
+      return res.status(404).send({ status: 404, message: "User not found" });
+    } else {
+      let id = req.params.id;
+      const findSubscription = await Subscription.findById(id);
+      if (findSubscription) {
+        const findTransaction = await transaction.findOne({ user: user._id, type: "Subscription", Status: "pending" });
+        if (findTransaction) {
+          let deleteData = await transaction.findByIdAndDelete({ _id: findTransaction._id })
+          let obj = {
+            user: user._id,
+            subscriptionId: findSubscription._id,
+            amount: findSubscription.price,
+            paymentMode: req.body.paymentMode,
+            type: "Subscription",
+            Status: "pending",
+          }
+          let update = await transaction.create(obj);
+          if (update) {
+            let line_items = [];
+            let obj2 = {
+              price_data: {
+                currency: "usd",
+                product_data: {
+                  name: `${findSubscription.plan} Subscription`,
+                },
+                unit_amount: `${Math.round(findSubscription.price * 100)}`,
+              },
+              quantity: 1,
+            }
+            line_items.push(obj2)
+            const session = await stripe.checkout.sessions.create({
+              payment_method_types: ["card"],
+              success_url: `https://shahina-web.vercel.app/verifySubscription/${update._id}`,
+              cancel_url: `https://shahina-web.vercel.app/faildeSub/${update._id}`,
+              customer_email: req.user.email,
+              client_reference_id: update._id,
+              line_items: line_items,
+              mode: "payment",
+            });
+            return res.status(200).json({ status: "success", session: session, });
+          }
+        } else {
+          let obj = {
+            user: user._id,
+            subscriptionId: findSubscription._id,
+            amount: findSubscription.price,
+            paymentMode: req.body.paymentMode,
+            type: "Subscription",
+            Status: "pending",
+          }
+          let update = await transaction.create(obj);
+          if (update) {
+            let line_items = [];
+            let obj2 = {
+              price_data: {
+                currency: "usd",
+                product_data: {
+                  name: `${findSubscription.plan} Subscription`,
+                },
+                unit_amount: `${Math.round(findSubscription.price * 100)}`,
+              },
+              quantity: 1,
+            }
+            line_items.push(obj2)
+            const session = await stripe.checkout.sessions.create({
+              payment_method_types: ["card"],
+              success_url: `https://shahina-web.vercel.app/verifySubscription/${update._id}`,
+              cancel_url: `https://shahina-web.vercel.app/faildeSub/${update._id}`,
+              customer_email: req.user.email,
+              client_reference_id: update._id,
+              line_items: line_items,
+              mode: "payment",
+            });
+            return res.status(200).json({ status: "success", session: session, });
+          }
+        }
+      } else {
+        return res.status(404).send({ status: 404, message: "Subscription not found" });
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ status: 500, message: "Server error" + error.message });
+  }
+};
+exports.verifySubscription = async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.user._id, });
+    if (!user) {
+      return res.status(404).send({ status: 404, message: "User not found" });
+    } else {
+      let findTransaction = await transaction.findById({ _id: req.params.transactionId, type: "Subscription", Status: "pending", });
+      if (findTransaction) {
+        if (req.body.Status == "Paid") {
+          let update = await transaction.findByIdAndUpdate({ _id: findTransaction._id }, { $set: { Status: "Paid" } }, { new: true });
+          if (update) {
+            const findSubscription = await Subscription.findById(update.subscriptionId);
+            if (findSubscription) {
+              let subscriptionExpiration = new Date(Date.now() + (findSubscription.month * 30 * 24 * 60 * 60 * 1000))
+              console.log(subscriptionExpiration);
+              let updateUser = await User.findByIdAndUpdate({ _id: user._id }, { $set: { subscriptionId: findTransaction.subscriptionId, isSubscription: true, subscriptionExpiration: subscriptionExpiration } }, { new: true })
+              return res.status(200).send({ status: 200, message: 'subscription subscribe successfully.', data: update })
+            }
+          }
+        }
+        if (req.body.Status == "failed") {
+          let update = await transaction.findByIdAndUpdate({ _id: findTransaction._id }, { $set: { Status: "failed" } }, { new: true });
+          if (update) {
+            return res.status(200).send({ status: 200, message: 'subscription not subscribe successfully.', data: update });
+          }
+        }
+      } else {
+        return res.status(404).send({ status: 404, message: "Transaction not found" });
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ status: 500, message: "Server error" + error.message });
+  }
+};
 const reffralCode = async () => {
   var digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let OTP = '';

@@ -1436,7 +1436,71 @@ exports.removeStyle = async (req, res) => {
                 return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
         }
 };
-
+exports.AddOffer = async (req, res) => {
+        try {
+                let findOffer = await offer.findOne({ name: req.body.name });
+                if (findOffer) {
+                        return res.status(409).json({ message: "Offer already exit.", status: 404, data: {} });
+                } else {
+                        if (req.file) {
+                                req.body.image = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
+                        }
+                        const data = { name: req.body.name, image: req.body.image, link: req.body.link };
+                        const updateOffer = await offer.create(data);
+                        return res.status(200).json({ message: "Offer add successfully.", status: 200, data: updateOffer });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getOffer = async (req, res) => {
+        try {
+                const updateOffer = await offer.find();
+                if (updateOffer.length > 0) {
+                        return res.status(200).json({ success: true, Offer: updateOffer });
+                } else {
+                        return res.status(404).json({ message: "Offer not found.", status: 200, data: {} });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.updateOffer = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const updateOffer = await offer.findById(id);
+                if (!updateOffer) {
+                        return res.status(404).json({ message: "Offer Not Found", status: 404, data: {} });
+                }
+                if (req.file) {
+                        updateOffer.image = req.file.path
+                } else {
+                        updateOffer.image = offer.image;
+                }
+                updateOffer.name = req.body.name;
+                updateOffer.link = req.body.link || offer.link;
+                let update = await updateOffer.save();
+                return res.status(200).json({ message: "Updated Successfully", status: 200, data: update });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.removeOffer = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const updateOffer = await offer.findById(id);
+                if (!updateOffer) {
+                        return res.status(404).json({ message: "Offer Not Found", status: 404, data: {} });
+                } else {
+                        await offer.findByIdAndDelete(updateOffer._id);
+                        return res.status(200).json({ message: "Offer Deleted Successfully !" });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
 
 
 
@@ -1528,71 +1592,6 @@ exports.listStore = async (req, res) => {
         } catch (error) {
                 console.error(error);
                 return res.status(500).send({ status: 500, message: "Server error" + error.message });
-        }
-};
-exports.AddOffer = async (req, res) => {
-        try {
-                let findOffer = await offer.findOne({ name: req.body.name });
-                if (findOffer) {
-                        return res.status(409).json({ message: "Offer already exit.", status: 404, data: {} });
-                } else {
-                        if (req.file) {
-                                req.body.image = req.file.path
-                        } else {
-                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
-                        }
-                        const data = { name: req.body.name, image: req.body.image, link: req.body.link };
-                        const updateOffer = await offer.create(data);
-                        return res.status(200).json({ message: "Offer add successfully.", status: 200, data: updateOffer });
-                }
-        } catch (error) {
-                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
-        }
-};
-exports.getOffer = async (req, res) => {
-        try {
-                const updateOffer = await offer.find();
-                if (updateOffer.length > 0) {
-                        return res.status(200).json({ success: true, Offer: updateOffer });
-                } else {
-                        return res.status(404).json({ message: "Offer not found.", status: 200, data: {} });
-                }
-        } catch (error) {
-                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
-        }
-};
-exports.updateOffer = async (req, res) => {
-        try {
-                const { id } = req.params;
-                const updateOffer = await offer.findById(id);
-                if (!updateOffer) {
-                        return res.status(404).json({ message: "Offer Not Found", status: 404, data: {} });
-                }
-                if (req.file) {
-                        updateOffer.image = req.file.path
-                } else {
-                        updateOffer.image = offer.image;
-                }
-                updateOffer.name = req.body.name;
-                updateOffer.link = req.body.link || offer.link;
-                let update = await updateOffer.save();
-                return res.status(200).json({ message: "Updated Successfully", status: 200, data: update });
-        } catch (error) {
-                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
-        }
-};
-exports.removeOffer = async (req, res) => {
-        try {
-                const { id } = req.params;
-                const updateOffer = await offer.findById(id);
-                if (!updateOffer) {
-                        return res.status(404).json({ message: "Offer Not Found", status: 404, data: {} });
-                } else {
-                        await offer.findByIdAndDelete(updateOffer._id);
-                        return res.status(200).json({ message: "Offer Deleted Successfully !" });
-                }
-        } catch (error) {
-                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
         }
 };
 exports.createAccessories = async (req, res) => {

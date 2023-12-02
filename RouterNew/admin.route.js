@@ -1,5 +1,5 @@
 const auth = require("../ControllerNew/adminController");
-const { upload, FranchiseUpload, productUpload, brandUpload } = require('../middlewareNew/imageupload')
+const { upload, FranchiseUpload, productUpload, brandUpload, guideUpload } = require('../middlewareNew/imageupload')
 const authJwt = require("../middlewareNew/authJwt");
 const visionTest = require("../ModelNew/visionTest/visionTest");
 module.exports = (app) => {
@@ -103,5 +103,28 @@ module.exports = (app) => {
         app.delete("/api/v1/admin/deleteVisionTest/:id", [authJwt.verifyToken], auth.removeVisionTest);
         app.put("/api/v1/admin/addInstructionInVisionTest/:visionTestId", upload.single('image'), [authJwt.verifyToken], auth.addInstructionInVisionTest);
         app.delete("/api/v1/admin/deleteInstructionInVisionTest/:id/:visionTestId", [authJwt.verifyToken], auth.deleteInstructionInVisionTest);
-
+        app.post("/api/v1/admin/AddVisionTestQuestion/:visionTestId", [authJwt.verifyToken], upload.single('image'), auth.addQuestionInVisionTest);
+        app.get("/api/v1/admin/getVisionTestQuestionById/:id", auth.getVisionTestQuestionById);
+        app.put("/api/v1/admin/updateVisionTestQuestion/:id", [authJwt.verifyToken], upload.single('image'), auth.updateQuestionInVisionTest);
+        app.get("/api/v1/admin/getAllVisionTestQuestion", auth.getQuestionInVisionTest);
+        app.delete("/api/v1/admin/deleteVisionTestQuestion/:id", [authJwt.verifyToken], auth.removeQuestionInVisionTest);
+        app.post("/api/v1/Subscription", auth.createSubscription);
+        app.get("/api/v1/Subscription", auth.getAllSubscription);
+        app.get("/api/v1/Subscription/byId/:id", auth.getSubscriptionById);
+        app.put("/api/v1/Subscription/:id", auth.updateSubscription);
+        app.delete("/api/v1/Subscription/:id", auth.deleteSubscription);
+        app.post("/api/v1/guide/createGuide", guideUpload, [authJwt.verifyToken], auth.createGuide);
+        app.get("/api/v1/guide/byId/:id", auth.getGuideById);
+        app.put("/api/v1/guide/updateGuide/:id", guideUpload, [authJwt.verifyToken], auth.updateGuide);
+        app.get("/api/v1/guide/allGuide", auth.getGuide);
+        app.delete("/api/v1/guide/removeGuide/:id", [authJwt.verifyToken], auth.removeGuide)
+        app.post("/api/v1/guide/addQuestionInGuide/:guideId", [authJwt.verifyToken], upload.single('image'), auth.createQuestionInGuide);
+        app.get("/api/v1/guide/getQuestionInGuideById/:id", auth.getQuestionInGuideById);
+        app.put("/api/v1/guide/updateQuestionInGuide/:id", [authJwt.verifyToken], upload.single('image'), auth.updateQuestionInGuide);
+        app.get("/api/v1/guide/getAllQuestionInGuide/:guideId", auth.getQuestionInGuide);
+        app.delete("/api/v1/guide/deleteQuestionInGuide/:id", [authJwt.verifyToken], auth.deleteQuestionInGuide);
+        app.post('/api/v1/offer', [authJwt.verifyToken], upload.single('image'), auth.AddOffer);
+        app.get('/api/v1/offer', auth.getOffer);
+        app.put('/api/v1/offer/updateOffer/:id', [authJwt.verifyToken], upload.single('image'), auth.updateOffer);
+        app.delete('/api/v1/offer/:id', auth.removeOffer)
 }

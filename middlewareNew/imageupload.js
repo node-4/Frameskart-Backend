@@ -7,4 +7,5 @@ const upload = multer({ storage: storage });
 const FranchiseUpload = upload.fields([{ name: 'image', maxCount: 20 }, { name: 'image1', maxCount: 1 }]);
 const productUpload = upload.fields([{ name: 'images', maxCount: 20 }, { name: 'featureImage', maxCount: 30 }]);
 const brandUpload = upload.fields([{ name: 'image', maxCount: 1 }, { name: 'logo', maxCount: 1 }]);
-module.exports = { upload, FranchiseUpload, productUpload, brandUpload };
+const guideUpload = upload.fields([{ name: 'image', maxCount: 1 }, { name: 'bannerImage', maxCount: 1 }]);
+module.exports = { upload, FranchiseUpload, productUpload, brandUpload, guideUpload };

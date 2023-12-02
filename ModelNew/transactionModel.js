@@ -5,6 +5,10 @@ const transactionSchema = mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: "User",
     },
+    subscriptionId: {
+        type: mongoose.Schema.ObjectId,
+        ref: "subscription",
+    },
     date: {
         type: Date,
         default: Date.now,

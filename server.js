@@ -16,10 +16,10 @@ app.get("/", (req, res) => {
 });
 
 
-// require('./Router/userRoute')(app);
-// require('./Router/admin.route')(app);
-require('./RouterNew/admin.route')(app);
-require('./RouterNew/userRoute')(app);
+require('./Router/userRoute')(app);
+require('./Router/admin.route')(app);
+// require('./RouterNew/admin.route')(app);
+// require('./RouterNew/userRoute')(app);
 
 
 mongoose.Promise = global.Promise;

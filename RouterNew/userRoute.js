@@ -32,4 +32,10 @@ module.exports = (app) => {
         app.get("/api/v1/allcreditTransactionUser", [authJwt.verifyToken], auth.allcreditTransactionUser);
         app.get("/api/v1/allDebitTransactionUser", [authJwt.verifyToken], auth.allDebitTransactionUser);
         app.post("/api/v1/transferAllEcashToWallet", [authJwt.verifyToken], auth.transferAllEcashToWallet);
+        app.get("/api/v1/user/giveAnswerVisionTest/:visionTestId", [authJwt.verifyToken], auth.giveAnswerVisionTest);
+        app.get('/api/v1/getSubscription', auth.getSubscription);
+        app.get('/api/v1/getSubscriptionForApp', [authJwt.verifyToken], auth.getSubscriptionApp);
+        app.post("/api/v1/takeSubscription/:id", [authJwt.verifyToken], auth.takeSubscription);
+        app.post("/api/v1/takeSubscriptionFromWebsite/:id", [authJwt.verifyToken], auth.takeSubscriptionFromWebsite);
+        app.post("/api/v1/verifySubscription/:transactionId", [authJwt.verifyToken], auth.verifySubscription);
 }

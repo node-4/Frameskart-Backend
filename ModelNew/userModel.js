@@ -62,6 +62,7 @@ const userSchema = new mongoose.Schema({
   refferalCode: { type: String, },
   refferUserId: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
   joinUser: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+  subscriptionId: { type: mongoose.Schema.ObjectId, ref: "subscription", },
   wallet: {
     type: Number,
     default: 0,
