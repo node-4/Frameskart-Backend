@@ -813,65 +813,90 @@ exports.verifySubscription = async (req, res) => {
 };
 exports.listProduct = async (req, res) => {
   try {
-    let query = {type:"product"};
-    if (req.query.categoryId) {
-      query.category = req.query.categoryId;
-    }
-    if (req.query.subcategoryId) {
-      query.subcategory = req.query.subcategoryId;
-    }
-    if (req.query.gender) {
-      query.gender = req.query.gender;
-    }
-    if (req.query.color) {
-      query.color = req.query.color;
-    }
-    if (req.query.brand) {
-      query.brand = req.query.brand;
-    }
-    if (req.query.shape) {
-      query.shape = req.query.shape;
-    }
-    if (req.query.style) {
-      query.style = req.query.style;
-    }
-    if (req.query.fromDate && !req.query.toDate) {
-      query.createdAt = { $gte: req.query.fromDate };
-    }
-    if (!req.query.fromDate && req.query.toDate) {
-      query.createdAt = { $lte: req.query.toDate };
-    }
-    if (req.query.fromDate && req.query.toDate) {
-      query.$and = [
-        { createdAt: { $gte: req.query.fromDate } },
-        { createdAt: { $lte: req.query.toDate } },
-      ];
-    }
-    var limit = parseInt(req.query.limit);
-    var options = {
-      page: parseInt(req.query.page) || 1,
-      limit: limit || 1000,
-      sort: { createdAt: 1 },
-      populate: { path: 'category subcategory color gender brand shape style' }
-    }
-    product.paginate(query, options, (transErr, transRes) => {
-      if (transErr) {
-        return res.status(501).send({ message: "Internal Server error" + transErr.message });
-      } else if (transRes.docs.length == 0) {
-        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: [] });
-      } else {
-        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: transRes });
-      }
-    })
+    console.log(req.user);
+    const user = await User.findById(req.user._id).populate('subscriptionId');
+    
+    if (!user) {
+      return res.status(404).send({ status: 404, message: "User not found", data: {} });
+    } else {
+        let query = { type: "product" };
+        if (req.query.categoryId) {
+          query.category = req.query.categoryId;
+        }
+        if (req.query.subcategoryId) {
+          query.subcategory = req.query.subcategoryId;
+        }
+        if (req.query.gender) {
+          query.gender = req.query.gender;
+        }
+        if (req.query.color) {
+          query.color = req.query.color;
+        }
+        if (req.query.brand) {
+          query.brand = req.query.brand;
+        }
+        if (req.query.shape) {
+          query.shape = req.query.shape;
+        }
+        if (req.query.style) {
+          query.style = req.query.style;
+        }
+        if (req.query.fromDate && !req.query.toDate) {
+          query.createdAt = { $gte: req.query.fromDate };
+        }
+        if (!req.query.fromDate && req.query.toDate) {
+          query.createdAt = { $lte: req.query.toDate };
+        }
+        if (req.query.fromDate && req.query.toDate) {
+          query.$and = [
+            { createdAt: { $gte: req.query.fromDate } },
+            { createdAt: { $lte: req.query.toDate } },
+          ];
+        }
+        var limit = parseInt(req.query.limit);
+        var options = {
+          page: parseInt(req.query.page) || 1,
+          limit: limit || 1000,
+          sort: { createdAt: 1 },
+          populate: { path: 'category subcategory color gender brand shape style' },
+        };
+        product.paginate(query, options, (transErr, transRes) => {
+          if (transErr) {
+            return res.status(501).send({ message: "Internal Server error" + transErr.message });
+          } else if (transRes.docs.length == 0) {
+            return res.status(200).send({ status: 200, message: "Product data found successfully.", data: [] });
+          } else {
+            const responseData = transRes.docs.map(product => {
+              const modifiedProduct = {
+                ...product.toObject(),
+                memberPrice: null,
+              };
+              if (user.isSubscription) {
+                modifiedProduct.memberPrice = product.price - (product.price * user.subscriptionId.discount) / 100;
+              }
+              return modifiedProduct;
+            });
 
+            return res.status(200).send({
+              status: 200,
+              message: "Product data found successfully.",
+              data: {
+                ...transRes,
+                docs: responseData,
+              },
+            });
+          }
+        });
+      
+    }
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).send({ message: "Internal Server error" + error.message });
   }
 };
 exports.newArrivalProduct = async (req, res) => {
   try {
-    let query = {type:"product"};
+    let query = { type: "product" };
     if (req.query.categoryId) {
       query.category = req.query.categoryId;
     }
