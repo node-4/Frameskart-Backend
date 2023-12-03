@@ -34,27 +34,27 @@ module.exports = (app) => {
         app.get("/api/v1/allTransactionUser", [authJwt.verifyToken], auth.allTransactionUser);
         app.get("/api/v1/allcreditTransactionUser", [authJwt.verifyToken], auth.allcreditTransactionUser);
         app.get("/api/v1/allDebitTransactionUser", [authJwt.verifyToken], auth.allDebitTransactionUser);
-
-
-
-
-
-
-
-
-
         app.post("/api/v1/user/createWishlist/:id", [authJwt.verifyToken], auth.createWishlist);
         app.post("/api/v1/user/removeFromWishlist/:id", [authJwt.verifyToken], auth.removeFromWishlist);
         app.get("/api/v1/user/myWishlist", [authJwt.verifyToken], auth.myWishlist);
         app.get("/api/v1/user/getProducts", auth.listProduct);
         app.get("/api/v1/user/newArrivalProduct", auth.newArrivalProduct);
+        app.get("/api/v1/getProductsbyid/:id", [authJwt.verifyToken], auth.getProductDetails);
+        app.get('/api/v1/getRecentlyView', [authJwt.verifyToken], auth.getRecentlyView);
         app.get('/api/v1/cart', [authJwt.verifyToken], auth.getCart);
         app.post('/api/v1/addToCart/:id', [authJwt.verifyToken], auth.addToCart);
+
+
+
+
+
+
+
+
+
         app.post('/api/v1/checkout', [authJwt.verifyToken], auth.checkout);
         app.get("/api/v1/successOrder/:orderId", [authJwt.verifyToken], auth.successOrder);
         app.get("/api/v1/cancelOrder/:orderId", [authJwt.verifyToken], auth.cancelOrder);
         app.get('/api/v1/user/getOrder', [authJwt.verifyToken], auth.getOrder);
         app.get('/api/v1/user/getOrderbyId/:id', [authJwt.verifyToken], auth.getOrderById);
-        app.get('/api/v1/getRecentlyView', [authJwt.verifyToken], auth.getRecentlyView);
-        app.get("/api/v1/getProductsbyid/:id", [authJwt.verifyToken], auth.getProductDetails);
 }

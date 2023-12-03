@@ -15,6 +15,10 @@ const Address = require("../ModelNew/Address");
 const transaction = require('../ModelNew/transactionModel');
 const visionTestQuestion = require("../ModelNew/visionTest/visionTestQuestion");
 const Subscription = require("../ModelNew/subscription");
+const product = require("../ModelNew/productModel");
+const cartModel = require("../ModelNew/cartModel");
+const Wishlist = require("../ModelNew/whishList");
+const recentlyView = require("../ModelNew/recentlyView");
 exports.socialLogin = async (req, res) => {
   try {
     let userData = await User.findOne({ $or: [{ mobileNumber: req.body.mobileNumber }, { socialId: req.body.socialId }, { socialType: req.body.socialType }] });
@@ -805,6 +809,300 @@ exports.verifySubscription = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).send({ status: 500, message: "Server error" + error.message });
+  }
+};
+exports.listProduct = async (req, res) => {
+  try {
+    let query = {type:"product"};
+    if (req.query.categoryId) {
+      query.category = req.query.categoryId;
+    }
+    if (req.query.subcategoryId) {
+      query.subcategory = req.query.subcategoryId;
+    }
+    if (req.query.gender) {
+      query.gender = req.query.gender;
+    }
+    if (req.query.color) {
+      query.color = req.query.color;
+    }
+    if (req.query.brand) {
+      query.brand = req.query.brand;
+    }
+    if (req.query.shape) {
+      query.shape = req.query.shape;
+    }
+    if (req.query.style) {
+      query.style = req.query.style;
+    }
+    if (req.query.fromDate && !req.query.toDate) {
+      query.createdAt = { $gte: req.query.fromDate };
+    }
+    if (!req.query.fromDate && req.query.toDate) {
+      query.createdAt = { $lte: req.query.toDate };
+    }
+    if (req.query.fromDate && req.query.toDate) {
+      query.$and = [
+        { createdAt: { $gte: req.query.fromDate } },
+        { createdAt: { $lte: req.query.toDate } },
+      ];
+    }
+    var limit = parseInt(req.query.limit);
+    var options = {
+      page: parseInt(req.query.page) || 1,
+      limit: limit || 1000,
+      sort: { createdAt: 1 },
+      populate: { path: 'category subcategory color gender brand shape style' }
+    }
+    product.paginate(query, options, (transErr, transRes) => {
+      if (transErr) {
+        return res.status(501).send({ message: "Internal Server error" + transErr.message });
+      } else if (transRes.docs.length == 0) {
+        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: [] });
+      } else {
+        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: transRes });
+      }
+    })
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).send({ message: "Internal Server error" + error.message });
+  }
+};
+exports.newArrivalProduct = async (req, res) => {
+  try {
+    let query = {type:"product"};
+    if (req.query.categoryId) {
+      query.category = req.query.categoryId;
+    }
+    if (req.query.subcategoryId) {
+      query.subcategory = req.query.subcategoryId;
+    }
+    if (req.query.gender) {
+      query.gender = req.query.gender;
+    }
+    if (req.query.color) {
+      query.color = req.query.color;
+    }
+    if (req.query.brand) {
+      query.brand = req.query.brand;
+    }
+    if (req.query.shape) {
+      query.shape = req.query.shape;
+    }
+    if (req.query.style) {
+      query.style = req.query.style;
+    }
+    if (req.query.fromDate && !req.query.toDate) {
+      query.createdAt = { $gte: req.query.fromDate };
+    }
+    if (!req.query.fromDate && req.query.toDate) {
+      query.createdAt = { $lte: req.query.toDate };
+    }
+    if (req.query.fromDate && req.query.toDate) {
+      query.$and = [
+        { createdAt: { $gte: req.query.fromDate } },
+        { createdAt: { $lte: req.query.toDate } },
+      ];
+    }
+    var limit = parseInt(req.query.limit);
+    var options = {
+      page: parseInt(req.query.page) || 1,
+      limit: limit || 1000,
+      sort: { createdAt: -1 },
+      populate: { path: 'category subcategory color gender brand shape style' }
+    }
+    product.paginate(query, options, (transErr, transRes) => {
+      if (transErr) {
+        return res.status(501).send({ message: "Internal Server error" + transErr.message });
+      } else if (transRes.docs.length == 0) {
+        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: [] });
+      } else {
+        return res.status(200).send({ status: 200, message: "Product data found successfully.", data: transRes });
+      }
+    })
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).send({ message: "Internal Server error" + error.message });
+  }
+};
+exports.createWishlist = async (req, res, next) => {
+  try {
+    const productId = req.params.id;
+    const userId = req.user._id;
+    let wishList = await Wishlist.findOne({ user: userId });
+    if (!wishList) {
+      wishList = new Wishlist({ user: userId, products: [productId] });
+    } else {
+      if (!wishList.products.includes(productId)) {
+        wishList.products.push(productId);
+      } else {
+        return res.status(200).json({ status: 200, message: "Product is already in the wishlist" });
+      }
+    }
+    await wishList.save();
+    return res.status(200).json({ status: 200, message: "Product added to wishlist successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ status: 500, message: "Server error", data: {} });
+  }
+};
+exports.removeFromWishlist = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const wishlist = await Wishlist.findOne({ user: userId });
+    if (!wishlist) {
+      return res.status(404).json({ message: "Wishlist not found", status: 404 });
+    }
+    const productId = req.params.id;
+    const viewProduct = await Product.findById(productId);
+    if (!viewProduct) {
+      return res.status(404).json({ message: "Product not found", status: 404 });
+    }
+    wishlist.products.pull(productId);
+    await wishlist.save();
+    // viewProduct.Wishlistuser.pull(userId);
+    // await viewProduct.save();
+    return res.status(200).json({ status: 200, message: "Removed from Wishlist" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ status: 500, message: "Server error", data: {} });
+  }
+};
+exports.myWishlist = async (req, res, next) => {
+  try {
+    let myList = await Wishlist.findOne({ user: req.user._id }).populate('products');
+    if (!myList) {
+      myList = await Wishlist.create({ user: req.user._id });
+    }
+    console.log(myList);
+    let array = []
+    for (let i = 0; i < myList.products.length; i++) {
+      const data = await product.findById(myList.products[i]._id).populate('style shape brand gender color subcategory category')
+      array.push(data)
+    }
+    let obj = {
+      _id: myList._id,
+      user: myList.user,
+      products: array,
+      __v: myList.__v
+    }
+
+    return res.status(200).json({ status: 200, wishlist: obj, });
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.getProductDetails = async (req, res, next) => {
+  try {
+    const product = await productModel.findById(req.params.id);
+    if (!product) {
+      return next(new ErrorHander("Product not found", 404));
+    }
+    const findData = await recentlyView.findOne({ user: req.user._id, products: product._id });
+    if (findData) {
+      const saved = await recentlyView.findByIdAndUpdate({ _id: findData._id }, { $set: { products: product._id } }, { new: true });
+      if (saved) {
+        return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
+      }
+    } else {
+      const saved = await recentlyView.create({ user: req.user._id, products: product._id });
+      if (saved) {
+        return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
+      }
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.getRecentlyView = async (req, res, next) => {
+  try {
+    const cart = await recentlyView.find({ user: req.user._id }).populate({ path: "products" }).sort({ "updateAt": -1 });
+    if (!cart) {
+      return res.status(200).json({ success: false, msg: "No recentlyView", cart: {} });
+    }
+    return res.status(200).json({ success: true, msg: "recentlyView retrieved successfully", cart: cart });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.addToCart = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id });
+    if (!cart) {
+      const products = await productModel.findById(req.params.id);
+      if (!products) {
+        return next(new ErrorHander("Product not found", 404));
+      }
+      const newCart = {
+        user: req.user._id,
+        products: [{ productId: products._id, quantity: req.body.quantity }],
+      };
+      const savedCart = await cartModel.create(newCart);
+      return res.status(200).json({ status: 200, message: "Product added to cart successfully", data: savedCart, });
+    } else {
+      const products = await productModel.findById(req.params.id);
+      if (!products) {
+        return next(new ErrorHander("Product not found", 404));
+      }
+      const existingProduct = cart.products.find((item) => item.productId.toString() === products._id.toString());
+      if (existingProduct) {
+        existingProduct.quantity = req.body.quantity;
+      } else {
+        cart.products.push({ productId: products._id, quantity: req.body.quantity });
+      }
+      const savedCart = await cart.save();
+      return res.status(200).json({ status: 200, message: "Product added to cart successfully", data: savedCart, });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getCart = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id }).populate('products.productId');
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found for the specified user.' });
+    }
+    const updatedProducts = cart.products.map((cartProduct) => {
+      const product = cartProduct.productId;
+      const productType = product.type || "product";
+      const priceField = productType === "product" ? "soldPrice" : "price";
+      const mrp = product.price || 0;
+      const netPrice = product[priceField] || 0;
+      let discount = 0;
+      if (mrp > 0) {
+        discount = mrp - netPrice;
+      } else {
+        discount = 0
+      }
+      return {
+        ...cartProduct.toObject(),
+        mrp,
+        netPrice,
+        discount,
+        total: cartProduct.quantity * netPrice,
+      };
+    });
+    const totalPrice = updatedProducts.reduce((total, cartProduct) => {
+      return total + cartProduct.total;
+    }, 0);
+    return res.status(200).json({
+      status: 200,
+      message: "Get cart successfully",
+      data: {
+        cart: { ...cart.toObject(), products: updatedProducts },
+        totalPrice,
+
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 const reffralCode = async () => {

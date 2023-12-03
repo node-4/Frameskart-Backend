@@ -63,6 +63,13 @@ const userSchema = new mongoose.Schema({
   refferUserId: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
   joinUser: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
   subscriptionId: { type: mongoose.Schema.ObjectId, ref: "subscription", },
+  isSubscription: {
+    type: Boolean,
+    default: false,
+  },
+  subscriptionExpiration:{
+    type: Date
+  },
   wallet: {
     type: Number,
     default: 0,

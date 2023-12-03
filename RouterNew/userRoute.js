@@ -38,4 +38,13 @@ module.exports = (app) => {
         app.post("/api/v1/takeSubscription/:id", [authJwt.verifyToken], auth.takeSubscription);
         app.post("/api/v1/takeSubscriptionFromWebsite/:id", [authJwt.verifyToken], auth.takeSubscriptionFromWebsite);
         app.post("/api/v1/verifySubscription/:transactionId", [authJwt.verifyToken], auth.verifySubscription);
+        app.get("/api/v1/user/getProducts", auth.listProduct);
+        app.get("/api/v1/user/newArrivalProduct", auth.newArrivalProduct);
+        app.post("/api/v1/user/createWishlist/:id", [authJwt.verifyToken], auth.createWishlist);
+        app.post("/api/v1/user/removeFromWishlist/:id", [authJwt.verifyToken], auth.removeFromWishlist);
+        app.get("/api/v1/user/myWishlist", [authJwt.verifyToken], auth.myWishlist);
+        app.get("/api/v1/getProductsbyid/:id", [authJwt.verifyToken], auth.getProductDetails);
+        app.get('/api/v1/getRecentlyView', [authJwt.verifyToken], auth.getRecentlyView);
+        app.get('/api/v1/cart', [authJwt.verifyToken], auth.getCart);
+        app.post('/api/v1/addToCart/:id', [authJwt.verifyToken], auth.addToCart);
 }

@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const mongooseAggregatePaginate = require("mongoose-aggregate-paginate");
-
 const productSchema = mongoose.Schema({
   freeShipping: {
     type: Boolean,
@@ -12,6 +11,9 @@ const productSchema = mongoose.Schema({
     required: true,
   },
   price: {
+    type: Number,
+  },
+  mrp: {
     type: Number,
   },
   image: {
@@ -57,9 +59,6 @@ const productSchema = mongoose.Schema({
       },
     },
   ],
-  pricewithlense: {
-    type: Number,
-  },
   size: {
     type: Array,
   },
@@ -70,9 +69,6 @@ const productSchema = mongoose.Schema({
   discountPer: {
     type: Number,
     default: 0
-  },
-  soldPrice: {
-    type: Number,
   },
   features: {
     type: String,
@@ -121,10 +117,18 @@ const productSchema = mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: "shapeStyle",
   },
+  frameId: {
+    type: mongoose.Schema.ObjectId,
+    ref: "frame",
+  },
   stock: {
     type: Number,
     required: ["Please Enter Stock"],
     default: 1,
+  },
+  sold: {
+    type: Number,
+    default: 0,
   },
   type: {
     type: String,

@@ -27,6 +27,9 @@ const lens = require("../ModelNew/Lens/lens");
 const powerTypeCategory = require("../ModelNew/Lens/powerTypeCategory");
 const powerTypeSubCategory = require("../ModelNew/Lens/powerTypeSubCategory");
 const product = require("../ModelNew/productModel");
+const bottomCard = require("../ModelNew/bottomCard");
+const premiumLenses = require("../ModelNew/premiumLenses");
+const storeModel = require("../ModelNew/store");
 
 exports.registration = async (req, res) => {
         const { mobileNumber, email } = req.body;
@@ -2411,7 +2414,7 @@ exports.removeFrame = async (req, res) => {
 };
 exports.createLens = async (req, res) => {
         try {
-                const { logoImage, name, powerTypeCategoryId, powerTypeSubCategoryId, frameId, productId, feature, coating, price, topSelling, withInDay } = req.body;
+                const { name, powerTypeCategoryId, powerTypeSubCategoryId, frameId, productId, feature, coating, price, topSelling, withInDay } = req.body;
                 let findPowerTypeCategory = await powerTypeCategory.findOne({ _id: powerTypeCategoryId });
                 if (!findPowerTypeCategory) {
                         return res.status(404).json({ message: "PowerType Category not found.", status: 400, data: {} });
@@ -2450,6 +2453,33 @@ exports.createLens = async (req, res) => {
                 return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
         }
 }
+exports.getLens = async (req, res) => {
+        try {
+                const { powerTypeCategoryId, powerTypeSubCategoryId, frameId, productId, topSelling } = req.query;
+                const filter = {};
+                if (powerTypeCategoryId) {
+                        filter.powerTypeCategoryId = powerTypeCategoryId;
+                }
+                if (powerTypeSubCategoryId) {
+                        filter.powerTypeSubCategoryId = powerTypeSubCategoryId;
+                }
+                if (frameId) {
+                        filter.frameId = frameId;
+                }
+                if (productId) { filter.productId = productId; }
+                if (topSelling !== undefined) {
+                        filter.topSelling = topSelling === 'true';
+                }
+                const filteredLens = await lens.find(filter);
+                if (filteredLens.length > 0) {
+                        return res.status(200).json({ message: "Lens found successfully.", status: 200, data: filteredLens });
+                } else {
+                        return res.status(404).json({ message: "Lens not found.", status: 404, data: {} });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "Internal server error", data: error.message });
+        }
+};
 exports.updateLens = async (req, res) => {
         try {
                 const { lensId } = req.params;
@@ -2511,33 +2541,6 @@ exports.updateLens = async (req, res) => {
                 return res.status(500).json({ status: 500, message: "Internal server error.", data: error.message });
         }
 };
-exports.getLens = async (req, res) => {
-        try {
-                const { powerTypeCategoryId, powerTypeSubCategoryId, frameId, productId, topSelling } = req.query;
-                const filter = {};
-                if (powerTypeCategoryId) {
-                        filter.powerTypeCategoryId = powerTypeCategoryId;
-                }
-                if (powerTypeSubCategoryId) {
-                        filter.powerTypeSubCategoryId = powerTypeSubCategoryId;
-                }
-                if (frameId) {
-                        filter.frameId = frameId;
-                }
-                if (productId) { filter.productId = productId; }
-                if (topSelling !== undefined) {
-                        filter.topSelling = topSelling === 'true';
-                }
-                const filteredLens = await lens.find(filter);
-                if (filteredLens.length > 0) {
-                        return res.status(200).json({ message: "Lens found successfully.", status: 200, data: filteredLens });
-                } else {
-                        return res.status(404).json({ message: "Lens not found.", status: 404, data: {} });
-                }
-        } catch (error) {
-                return res.status(500).json({ status: 500, message: "Internal server error", data: error.message });
-        }
-};
 exports.removeLens = async (req, res) => {
         try {
                 const { id } = req.params;
@@ -2550,5 +2553,389 @@ exports.removeLens = async (req, res) => {
                 }
         } catch (error) {
                 return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.createAccessories = async (req, res) => {
+        try {
+                let findAccessories = await productModel.findOne({ name: req.body.name, type: 'accessories' });
+                if (findAccessories) {
+                        return res.status(409).json({ message: "Accessories already exit.", status: 404, data: {} });
+                } else {
+                        if (req.file) {
+                                req.body.image = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
+                        }
+                        const data = { name: req.body.name, price: req.body.price, image: req.body.image, type: 'accessories' };
+                        const accessorie = await productModel.create(data);
+                        return res.status(200).json({ message: "Accessories add successfully.", status: 200, data: accessorie });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getAccessories = async (req, res) => {
+        try {
+                const findShape = await productModel.find({ type: 'accessories' });
+                if (findShape.length > 0) {
+                        return res.status(200).json({ success: true, data: findShape });
+                } else {
+                        return res.status(404).json({ message: "Accessories not found.", status: 200, data: {} });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.updateAccessories = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const Accessoriess = await productModel.findById(id);
+                if (!Accessoriess) {
+                        return res.status(404).json({ message: "Accessories Not Found", status: 404, data: {} });
+                }
+                if (req.file) {
+                        Accessoriess.image = req.file.path
+                } else {
+                        Accessoriess.image = Accessoriess.image;
+                }
+                Accessoriess.name = req.body.name || Accessoriess.name;
+                Accessoriess.price = req.body.price || Accessoriess.price;
+                Accessoriess.type = 'accessories';
+                let update = await Accessoriess.save();
+                return res.status(200).json({ message: "Updated Successfully", data: update });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.removeAccessories = async (req, res) => {
+        try {
+                const { id } = req.params;
+                const findShape = await productModel.findById(id);
+                if (!findShape) {
+                        return res.status(404).json({ message: "Accessories Not Found", status: 404, data: {} });
+                } else {
+                        await productModel.findByIdAndDelete(findShape._id);
+                        return res.status(200).json({ message: "Accessories Deleted Successfully !" });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.createProduct = async (req, res, next) => {
+        try {
+                let images = [], featuresImages = [];
+                if (req.files['images']) {
+                        let imagess = req.files['images'];
+                        for (let i = 0; i < imagess.length; i++) {
+                                images.push(imagess[i].path)
+                        }
+                }
+                if (req.files['featureImage']) {
+                        let imagess = req.files['featureImage'];
+                        for (let i = 0; i < imagess.length; i++) {
+                                featuresImages.push(imagess[i].path)
+                        }
+                }
+                req.body.images = images;
+                req.body.featuresImage = featuresImages;
+                if (req.body.discountActive == 'true') {
+                        req.body.discountPer = req.body.discountPer;
+                }
+                req.body.type = "product";
+                const findProduct = await product.create(req.body);
+                return res.status(200).json({ message: "product add successfully.", status: 200, data: findProduct, });
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getProducts = async (req, res) => {
+        try {
+                const Ads = await product.find({ type: "product" });
+                if (Ads.length == 0) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                } else {
+                        return res.status(200).json({ status: 200, message: "All Product Data found successfully.", data: Ads })
+                }
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getProductDetails = async (req, res, next) => {
+        try {
+                const findProduct = await product.findById(req.params.id);
+                if (!findProduct) {
+                        return next(new ErrorHander("Product not found", 404));
+                }
+                return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: findProduct })
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.deleteProducts = async (req, res) => {
+        try {
+                const findProduct = await product.findById({ _id: req.params.id });
+                if (!findProduct) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                await product.findByIdAndDelete({ _id: req.params.id });
+                return res.status(200).json({ status: 200, message: "Product delete successfully.", data: {} })
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.createBreakageCoverage = async (req, res, next) => {
+        try {
+                const Ads = await product.findOne({ type: "BreakageCoverage" });
+                if (!Ads) {
+                        if (req.file) {
+                                req.body.image = req.file.path;
+                        } else {
+                                return res.status(404).json({ message: "Please provide image.", status: 404, data: {}, });
+                        }
+                        req.body.type = "BreakageCoverage";
+                        const findProduct = await product.create(req.body);
+                        return res.status(200).json({ message: "Breakage Coverage add successfully.", status: 200, data: findProduct, });
+                } else {
+                        if (req.file) {
+                                Ads.image = req.file.path;
+                        } else {
+                                Ads.image = Ads.image;
+                        }
+                        Ads.description = req.body.description || Ads.description;
+                        Ads.price = req.body.price || Ads.price;
+                        Ads.save();
+                        return res.status(200).json({ message: "Breakage Coverage add successfully.", status: 200, data: Ads, });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getBreakageCoverage = async (req, res) => {
+        try {
+                const Ads = await product.findOne({ type: "BreakageCoverage" });
+                if (!Ads) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                } else {
+                        return res.status(200).json({ status: 200, message: "Breakage Coverage Data found successfully.", data: Ads })
+                }
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.deleteBreakageCoverage = async (req, res) => {
+        try {
+                const findProduct = await product.findById({ _id: req.params.id });
+                if (!findProduct) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                await product.findByIdAndDelete({ _id: req.params.id });
+                return res.status(200).json({ status: 200, message: "Breakage Coverage delete successfully.", data: {} })
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.createBottomCard = async (req, res, next) => {
+        try {
+                const findBottomCard = await bottomCard.findOne({ type: req.body.type });
+                if (!findBottomCard) {
+                        if (req.file) {
+                                req.body.image = req.file.path;
+                        } else {
+                                return res.status(404).json({ message: "Please provide image.", status: 404, data: {}, });
+                        }
+                        req.body.type = req.body.type;
+                        const findProduct = await bottomCard.create(req.body);
+                        return res.status(200).json({ message: "Bottom Card add successfully.", status: 200, data: findProduct, });
+                } else {
+                        if (req.file) {
+                                findBottomCard.image = req.file.path;
+                        } else {
+                                findBottomCard.image = findBottomCard.image;
+                        }
+                        findBottomCard.name = req.body.name || findBottomCard.name;
+                        findBottomCard.type = req.body.type || findBottomCard.type;
+                        findBottomCard.save();
+                        return res.status(200).json({ message: "Bottom Card add successfully.", status: 200, data: findBottomCard, });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getBottomCard = async (req, res) => {
+        try {
+                const Ads = await bottomCard.find({});
+                if (Ads.length==0) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                } else {
+                        return res.status(200).json({ status: 200, message: "Bottom Card Data found successfully.", data: Ads })
+                }
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.deleteBottomCard = async (req, res) => {
+        try {
+                const findProduct = await bottomCard.findById({ _id: req.params.id });
+                if (!findProduct) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                await bottomCard.findByIdAndDelete({ _id: req.params.id });
+                return res.status(200).json({ status: 200, message: "Bottom Card delete successfully.", data: {} })
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.createPremiumLenses = async (req, res) => {
+        try {
+                const { name, description, image } = req.body;
+                let findBanner = await premiumLenses.findOne({ name: name });
+                if (findBanner) {
+                        return res.status(200).json({ status: 200, message: 'Premium Lenses already exit', data: findBanner });
+                }
+                if (req.file) {
+                        req.body.image = req.file.path;
+                }
+                const newCategory = await premiumLenses.create(req.body);
+                return res.status(200).json({ status: 200, message: 'Premium Lenses created successfully', data: newCategory });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Failed to create Premium Lenses' });
+        }
+};
+exports.getPremiumLensesById = async (req, res) => {
+        try {
+                const bannerId = req.params.id;
+                const user = await premiumLenses.findById(bannerId);
+                if (user) {
+                        return res.status(201).json({ message: "Premium Lenses found successfully", status: 200, data: user, });
+                }
+                return res.status(201).json({ message: "Premium Lenses not Found", status: 404, data: {}, });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: "Failed to retrieve premiumLenses" });
+        }
+};
+exports.deletePremiumLenses = async (req, res) => {
+        try {
+                const bannerId = req.params.id;
+                const user = await premiumLenses.findById(bannerId);
+                if (user) {
+                        const user1 = await premiumLenses.findByIdAndDelete({ _id: user._id });;
+                        if (user1) {
+                                return res.status(201).json({ message: "Premium Lenses delete successfully.", status: 200, data: {}, });
+                        }
+                } else {
+                        return res.status(201).json({ message: "Premium Lenses not Found", status: 404, data: {}, });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: "Failed to retrieve Premium Lenses" });
+        }
+};
+exports.getAllPremiumLenses = async (req, res) => {
+        try {
+                const categories = await premiumLenses.find();
+                if (categories.length > 0) {
+                        return res.status(200).json({ status: 200, message: 'Premium Lenses found successfully', data: categories });
+                } else {
+                        return res.status(404).json({ status: 404, message: 'Premium Lenses not found.', data: {} });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Failed to fetch Premium Lenses' });
+        }
+};
+exports.addStore = async (req, res) => {
+        try {
+                let findStore = await storeModel.findOne({ storeName: req.body.storeName });
+                if (findStore) {
+                        return res.status(409).send({ status: 409, message: "Already exit." });
+                } else {
+                        if (req.file) {
+                                req.body.storeImage = req.file.path
+                        } else {
+                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
+                        }
+                        let saveStore = await storeModel(req.body).save();
+                        if (saveStore) {
+                                return res.json({ status: 200, message: 'Store add successfully.', data: saveStore });
+                        }
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).send({ status: 500, message: "Server error" + error.message });
+        }
+};
+exports.viewStore = async (req, res) => {
+        try {
+                let findStore = await storeModel.findOne({ _id: req.params.id })
+                if (!findStore) {
+                        return res.status(404).send({ status: 404, message: "Data not found" });
+                } else {
+                        return res.json({ status: 200, message: 'Store found successfully.', data: findStore });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).send({ status: 500, message: "Server error" + error.message });
+        }
+};
+exports.editStore = async (req, res) => {
+        try {
+                let findStore = await storeModel.findOne({ _id: req.params.id });
+                if (!findStore) {
+                        return res.status(404).send({ status: 404, message: "Data not found" });
+                } else {
+                        if (req.file) {
+                                req.body.storeImage = req.file.filename
+                        }
+                        let saveStore = await storeModel.findByIdAndUpdate({ _id: findStore._id }, { $set: req.body }, { new: true })
+                        if (saveStore) {
+                                return res.json({ status: 200, message: 'Store update successfully.', data: saveStore });
+                        }
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).send({ status: 500, message: "Server error" + error.message });
+        }
+};
+exports.deleteStore = async (req, res) => {
+        try {
+                let vendorData = await User.findOne({ _id: req.user._id });
+                if (!vendorData) {
+                        return res.status(404).send({ status: 404, message: "User not found" });
+                } else {
+                        let findStore = await storeModel.findOne({ _id: req.params.id });
+                        if (!findStore) {
+                                return res.status(404).send({ status: 404, message: "Data not found" });
+                        } else {
+                                let update = await storeModel.findByIdAndDelete({ _id: findStore._id });
+                                if (update) {
+                                        return res.json({ status: 200, message: 'Store Delete successfully.', data: findStore });
+                                }
+                        }
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).send({ status: 500, message: "Server error" + error.message });
+        }
+};
+exports.listStore = async (req, res) => {
+        try {
+                let findStore = await storeModel.find({});
+                if (findStore.length == 0) {
+                        return res.status(404).send({ status: 404, message: "Data not found" });
+                } else {
+                        return res.json({ status: 200, message: 'Store Data found successfully.', data: findStore });
+                }
+        } catch (error) {
+                console.error(error);
+                return res.status(500).send({ status: 500, message: "Server error" + error.message });
         }
 };

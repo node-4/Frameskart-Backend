@@ -140,5 +140,31 @@ module.exports = (app) => {
         app.get("/api/v1/admin/Frame/allFrame", auth.getFrame);
         app.put("/api/v1/admin/Frame/updateFrame/:id", [authJwt.verifyToken], upload.single('image'), auth.updateFrame);
         app.delete("/api/v1/admin/Frame/deleteFrame/:id", [authJwt.verifyToken], auth.removeFrame);
-
+        app.post("/api/v1/lens/createLens", [authJwt.verifyToken], upload.single('image'), auth.createLens);
+        app.get("/api/v1/lens/allLens", auth.getLens);
+        app.put("/api/v1/lens/updateLens/:lensId", [authJwt.verifyToken], upload.single('image'), auth.updateLens);
+        app.delete("/api/v1/lens/deleteLens/:id", [authJwt.verifyToken], auth.removeLens);        
+        app.post("/api/v1/admin/accessories/createAccessories", [authJwt.verifyToken], upload.single('image'), auth.createAccessories);
+        app.get("/api/v1/admin/accessories/allAccessories", auth.getAccessories);
+        app.put("/api/v1/admin/accessories/updateAccessories/:id", [authJwt.verifyToken], upload.single('image'), auth.updateAccessories);
+        app.delete("/api/v1/admin/accessories/removeAccessories/:id", [authJwt.verifyToken], auth.removeAccessories);
+        app.post("/api/v1/admin/createBreakageCoverage", upload.single('image'), [authJwt.verifyToken], auth.createBreakageCoverage);
+        app.get("/api/v1/admin/getBreakageCoverage", auth.getBreakageCoverage);
+        app.delete("/api/v1/admin/deleteBreakageCoverage/:id", [authJwt.verifyToken], auth.deleteBreakageCoverage);
+        app.post("/api/v1/admin/createProduct", productUpload, [authJwt.verifyToken], auth.createProduct);
+        app.get("/api/v1/admin/getProducts", auth.getProducts);
+        app.get("/api/v1/admin/getProductsbyid/:id", auth.getProductDetails);
+        app.delete("/api/v1/admin/deleteProducts/:id", [authJwt.verifyToken], auth.deleteProducts);
+        app.post("/api/v1/admin/createBottomCard", upload.single('image'), [authJwt.verifyToken], auth.createBottomCard);
+        app.get("/api/v1/admin/getBottomCard", auth.getBottomCard);
+        app.delete("/api/v1/admin/deleteBottomCard/:id", [authJwt.verifyToken], auth.deleteBottomCard);  
+        app.post("/api/v1/admin/createPremiumLenses", upload.single('image'), [authJwt.verifyToken], auth.createPremiumLenses);
+        app.get("/api/v1/admin/getAllPremiumLenses", auth.getAllPremiumLenses);
+        app.get("/api/v1/admin/getPremiumLensesById/:id", auth.getPremiumLensesById);
+        app.delete("/api/v1/admin/deletePremiumLenses/:id", [authJwt.verifyToken], auth.deletePremiumLenses);
+        app.post("/api/v1/admin/Store/addStore", [authJwt.verifyToken], upload.single('image'), auth.addStore);
+        app.get("/api/v1/admin/listStore", auth.listStore);
+        app.get("/api/v1/admin/viewStore/:id", auth.viewStore);
+        app.put("/api/v1/admin/Store/editStore/:id", [authJwt.verifyToken], upload.single('image'), auth.editStore);
+        app.delete("/api/v1/admin/deleteStore/:id", [authJwt.verifyToken], auth.deleteStore);
 }

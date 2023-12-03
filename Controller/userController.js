@@ -565,76 +565,6 @@ exports.allDebitTransactionUser = async (req, res) => {
     return res.status(400).json({ message: err.message });
   }
 };
-
-
-exports.createWishlist = async (req, res, next) => {
-  try {
-    const productId = req.params.id;
-    const userId = req.user._id;
-    let wishList = await Wishlist.findOne({ user: userId });
-    if (!wishList) {
-      wishList = new Wishlist({ user: userId, products: [productId] });
-    } else {
-      if (!wishList.products.includes(productId)) {
-        wishList.products.push(productId);
-      } else {
-        return res.status(200).json({ status: 200, message: "Product is already in the wishlist" });
-      }
-    }
-    await wishList.save();
-    return res.status(200).json({ status: 200, message: "Product added to wishlist successfully" });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send({ status: 500, message: "Server error", data: {} });
-  }
-};
-exports.removeFromWishlist = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const wishlist = await Wishlist.findOne({ user: userId });
-    if (!wishlist) {
-      return res.status(404).json({ message: "Wishlist not found", status: 404 });
-    }
-    const productId = req.params.id;
-    const viewProduct = await Product.findById(productId);
-    if (!viewProduct) {
-      return res.status(404).json({ message: "Product not found", status: 404 });
-    }
-    wishlist.products.pull(productId);
-    await wishlist.save();
-    // viewProduct.Wishlistuser.pull(userId);
-    // await viewProduct.save();
-    return res.status(200).json({ status: 200, message: "Removed from Wishlist" });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).send({ status: 500, message: "Server error", data: {} });
-  }
-};
-exports.myWishlist = async (req, res, next) => {
-  try {
-    let myList = await Wishlist.findOne({ user: req.user._id }).populate('products');
-    if (!myList) {
-      myList = await Wishlist.create({ user: req.user._id });
-    }
-    console.log(myList);
-    let array = []
-    for (let i = 0; i < myList.products.length; i++) {
-      const data = await product.findById(myList.products[i]._id).populate('style shape brand gender color subcategory category')
-      array.push(data)
-    }
-    let obj = {
-      _id: myList._id,
-      user: myList.user,
-      products: array,
-      __v: myList.__v
-    }
-
-    return res.status(200).json({ status: 200, wishlist: obj, });
-  } catch (error) {
-    console.log(error);
-    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
-  }
-};
 exports.listProduct = async (req, res) => {
   try {
     let query = {};
@@ -751,36 +681,106 @@ exports.newArrivalProduct = async (req, res) => {
     return res.status(500).send({ message: "Internal Server error" + error.message });
   }
 };
-exports.getOrder = async (req, res, next) => {
+exports.createWishlist = async (req, res, next) => {
   try {
-    if (req.query.orderStatus != (null || undefined)) {
-      const cart = await userOrders.find({ userId: req.user._id, orderStatus: req.query.orderStatus }).populate('products.productId');
-      if (cart.length == 0) {
-        return res.status(404).json({ message: 'Orders not found for the specified user.' });
-      }
-      return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
+    const productId = req.params.id;
+    const userId = req.user._id;
+    let wishList = await Wishlist.findOne({ user: userId });
+    if (!wishList) {
+      wishList = new Wishlist({ user: userId, products: [productId] });
     } else {
-      const cart = await userOrders.find({ userId: req.user._id }).populate('products.productId')
-      if (cart.length == 0) {
-        return res.status(404).json({ message: 'Orders not found for the specified user.' });
+      if (!wishList.products.includes(productId)) {
+        wishList.products.push(productId);
+      } else {
+        return res.status(200).json({ status: 200, message: "Product is already in the wishlist" });
       }
-      return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
     }
+    await wishList.save();
+    return res.status(200).json({ status: 200, message: "Product added to wishlist successfully" });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.log(error);
+    return res.status(500).send({ status: 500, message: "Server error", data: {} });
   }
 };
-exports.getOrderById = async (req, res) => {
+exports.removeFromWishlist = async (req, res, next) => {
   try {
-    const Ads = await userOrders.findById({ _id: req.params.id });
-    if (!Ads) {
-      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    const userId = req.user._id;
+    const wishlist = await Wishlist.findOne({ user: userId });
+    if (!wishlist) {
+      return res.status(404).json({ message: "Wishlist not found", status: 404 });
     }
-    return res.status(200).json({ status: 200, message: "Data found successfully.", data: Ads })
+    const productId = req.params.id;
+    const viewProduct = await Product.findById(productId);
+    if (!viewProduct) {
+      return res.status(404).json({ message: "Product not found", status: 404 });
+    }
+    wishlist.products.pull(productId);
+    await wishlist.save();
+    // viewProduct.Wishlistuser.pull(userId);
+    // await viewProduct.save();
+    return res.status(200).json({ status: 200, message: "Removed from Wishlist" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ status: 500, message: "Server error", data: {} });
+  }
+};
+exports.myWishlist = async (req, res, next) => {
+  try {
+    let myList = await Wishlist.findOne({ user: req.user._id }).populate('products');
+    if (!myList) {
+      myList = await Wishlist.create({ user: req.user._id });
+    }
+    console.log(myList);
+    let array = []
+    for (let i = 0; i < myList.products.length; i++) {
+      const data = await product.findById(myList.products[i]._id).populate('style shape brand gender color subcategory category')
+      array.push(data)
+    }
+    let obj = {
+      _id: myList._id,
+      user: myList.user,
+      products: array,
+      __v: myList.__v
+    }
+
+    return res.status(200).json({ status: 200, wishlist: obj, });
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.getProductDetails = async (req, res, next) => {
+  try {
+    const product = await productModel.findById(req.params.id);
+    if (!product) {
+      return next(new ErrorHander("Product not found", 404));
+    }
+    const findData = await recentlyView.findOne({ user: req.user._id, products: product._id });
+    if (findData) {
+      const saved = await recentlyView.findByIdAndUpdate({ _id: findData._id }, { $set: { products: product._id } }, { new: true });
+      if (saved) {
+        return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
+      }
+    } else {
+      const saved = await recentlyView.create({ user: req.user._id, products: product._id });
+      if (saved) {
+        return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
+      }
+    }
   } catch (err) {
     console.log(err);
     return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.getRecentlyView = async (req, res, next) => {
+  try {
+    const cart = await recentlyView.find({ user: req.user._id }).populate({ path: "products" }).sort({ "updateAt": -1 });
+    if (!cart) {
+      return res.status(200).json({ success: false, msg: "No recentlyView", cart: {} });
+    }
+    return res.status(200).json({ success: true, msg: "recentlyView retrieved successfully", cart: cart });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 exports.addToCart = async (req, res, next) => {
@@ -859,6 +859,39 @@ exports.getCart = async (req, res, next) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+exports.getOrder = async (req, res, next) => {
+  try {
+    if (req.query.orderStatus != (null || undefined)) {
+      const cart = await userOrders.find({ userId: req.user._id, orderStatus: req.query.orderStatus }).populate('products.productId');
+      if (cart.length == 0) {
+        return res.status(404).json({ message: 'Orders not found for the specified user.' });
+      }
+      return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
+    } else {
+      const cart = await userOrders.find({ userId: req.user._id }).populate('products.productId')
+      if (cart.length == 0) {
+        return res.status(404).json({ message: 'Orders not found for the specified user.' });
+      }
+      return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getOrderById = async (req, res) => {
+  try {
+    const Ads = await userOrders.findById({ _id: req.params.id });
+    if (!Ads) {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+    return res.status(200).json({ status: 200, message: "Data found successfully.", data: Ads })
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
 exports.checkout = async (req, res, next) => {
   try {
     const cart = await cartModel.findOne({ user: req.user._id }).populate('products.productId');
@@ -913,40 +946,6 @@ exports.cancelOrder = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
-  }
-};
-exports.getRecentlyView = async (req, res, next) => {
-  try {
-    const cart = await recentlyView.find({ user: req.user._id }).populate({ path: "products" }).sort({ "updateAt": -1 });
-    if (!cart) {
-      return res.status(200).json({ success: false, msg: "No recentlyView", cart: {} });
-    }
-    return res.status(200).json({ success: true, msg: "recentlyView retrieved successfully", cart: cart });
-  } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-};
-exports.getProductDetails = async (req, res, next) => {
-  try {
-    const product = await productModel.findById(req.params.id);
-    if (!product) {
-      return next(new ErrorHander("Product not found", 404));
-    }
-    const findData = await recentlyView.findOne({ user: req.user._id, products: product._id });
-    if (findData) {
-      const saved = await recentlyView.findByIdAndUpdate({ _id: findData._id }, { $set: { products: product._id } }, { new: true });
-      if (saved) {
-        return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
-      }
-    } else {
-      const saved = await recentlyView.create({ user: req.user._id, products: product._id });
-      if (saved) {
-        return res.status(200).json({ status: 200, message: "Product Data found successfully.", data: product })
-      }
-    }
-  } catch (err) {
-    console.log(err);
     return res.status(501).send({ status: 501, message: "server error.", data: {}, });
   }
 };
