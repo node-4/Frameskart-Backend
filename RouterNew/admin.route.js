@@ -80,10 +80,10 @@ module.exports = (app) => {
         app.get("/api/v1/admin/getEyeTestCampById/:id", auth.getEyeTestCampById);
         app.delete("/api/v1/admin/deleteEyeTestCamp/:id", [authJwt.verifyToken], auth.deleteEyeTestCamp);
         app.get("/api/v1/admin/getAllEyeTestCampFormData", auth.getAllEyeTestCampFormData);
-        app.post("/api/v1/admin/ColorGender/addColorGender", [authJwt.verifyToken], auth.createColorGender);
+        app.post("/api/v1/admin/ColorGender/addColorGender", [authJwt.verifyToken],upload.single('image'), auth.createColorGender);
         app.get("/api/v1/admin/ColorGender/allColorGender", auth.getColorGender);
         app.get("/api/v1/admin/ColorGender/getColorGenderBytype/:type", auth.getColorGenderBytype);
-        app.put("/api/v1/admin/ColorGender/updateColorGender/:id", [authJwt.verifyToken], auth.updateColorGender);
+        app.put("/api/v1/admin/ColorGender/updateColorGender/:id", [authJwt.verifyToken],upload.single('image'), auth.updateColorGender);
         app.delete("/api/v1/admin/ColorGender/deleteColorGender/:id", [authJwt.verifyToken], auth.removeColorGender);
         app.post("/api/v1/admin/Shape/addShape", [authJwt.verifyToken], upload.single('image'), auth.AddShape);
         app.get("/api/v1/admin/Shape/allShape", auth.getShape);

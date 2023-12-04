@@ -1452,10 +1452,22 @@ exports.createColorGender = async (req, res) => {
                 if (findBrand) {
                         return res.status(409).json({ message: `${req.body.type} already exit.`, status: 409, data: {} });
                 } else {
-                        const data = {
-                                name: req.body.name,
-                                type: req.body.type,
-                        };
+                        let data;
+                        if (req.body.type == "Gender") {
+                                if(req.file){
+                                        req.body.image = req.file.path
+                                }
+                                data = {
+                                        name: req.body.name,
+                                        image: req.body.image,
+                                        type: req.body.type,
+                                };
+                        } else {
+                                data = {
+                                        name: req.body.name,
+                                        type: req.body.type,
+                                };
+                        }
                         const category = await colorGender.create(data);
                         return res.status(200).json({ message: `${req.body.type} add successfully.`, status: 200, data: category });
                 }
@@ -1491,6 +1503,11 @@ exports.updateColorGender = async (req, res) => {
                 const category = await colorGender.findById(id);
                 if (!category) {
                         return res.status(404).json({ message: "Data Not Found", status: 404, data: {} });
+                }
+                if(req.file){
+                        category.image = req.file.path
+                }else{
+                        category.image=category.image
                 }
                 category.name = req.body.name || category.name;
                 category.type = category.type;;
@@ -2769,7 +2786,7 @@ exports.createBottomCard = async (req, res, next) => {
 exports.getBottomCard = async (req, res) => {
         try {
                 const Ads = await bottomCard.find({});
-                if (Ads.length==0) {
+                if (Ads.length == 0) {
                         return res.status(404).json({ status: 404, message: "No data found", data: {} });
                 } else {
                         return res.status(200).json({ status: 200, message: "Bottom Card Data found successfully.", data: Ads })

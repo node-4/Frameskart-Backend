@@ -4,6 +4,9 @@ const accessSchema = new mongoose.Schema({
         name: {
                 type: String,
         },
+        image: {
+                type: String,
+        },
         type: {
                 type: String,
                 enum: ["color", "Gender"],
