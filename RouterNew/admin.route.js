@@ -44,7 +44,6 @@ module.exports = (app) => {
         app.get("/api/v1/category/getMainCategories", auth.getMainCategories);
         app.get("/api/v1/category/getFramesKartSmartSeriesCategories", auth.getFramesKartSmartSeriesCategories);
         app.get("/api/v1/category/getPremiumEyeWearCategories", auth.getPremiumEyeWearCategories);
-        app.get("/api/v1/category/getPremiumLensCategories", auth.getPremiumLensCategories);
         app.get("/api/v1/category/getFramesKartSeriesCategories", auth.getFramesKartSeriesCategories);
         app.post("/api/v1/subcategory/createsubcategory", [authJwt.verifyToken], upload.single('image'), auth.createSubcategory);
         app.get("/api/v1/subcategory/allsubcategory", auth.getSubcategories);

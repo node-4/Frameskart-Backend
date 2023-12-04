@@ -819,18 +819,6 @@ exports.getPremiumEyeWearCategories = async (req, res) => {
                 return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
         }
 };
-exports.getPremiumLensCategories = async (req, res) => {
-        try {
-                const updateOffer = await Category.find({ type: "PremiumLens" });
-                if (updateOffer.length > 0) {
-                        return res.status(200).json({ status: 200, message: "Category found.", Category: updateOffer });
-                } else {
-                        return res.status(404).json({ message: "Category not found.", status: 200, data: {} });
-                }
-        } catch (error) {
-                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
-        }
-};
 exports.getFramesKartSeriesCategories = async (req, res) => {
         try {
                 const updateOffer = await Category.find({ type: "FramesKartSeries" });
@@ -2557,7 +2545,7 @@ exports.removeLens = async (req, res) => {
 };
 exports.createAccessories = async (req, res) => {
         try {
-                let findAccessories = await productModel.findOne({ name: req.body.name, type: 'accessories' });
+                let findAccessories = await product.findOne({ name: req.body.name, type: 'accessories' });
                 if (findAccessories) {
                         return res.status(409).json({ message: "Accessories already exit.", status: 404, data: {} });
                 } else {
@@ -2567,7 +2555,7 @@ exports.createAccessories = async (req, res) => {
                                 return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
                         }
                         const data = { name: req.body.name, price: req.body.price, image: req.body.image, type: 'accessories' };
-                        const accessorie = await productModel.create(data);
+                        const accessorie = await product.create(data);
                         return res.status(200).json({ message: "Accessories add successfully.", status: 200, data: accessorie });
                 }
         } catch (error) {
@@ -2576,7 +2564,7 @@ exports.createAccessories = async (req, res) => {
 };
 exports.getAccessories = async (req, res) => {
         try {
-                const findShape = await productModel.find({ type: 'accessories' });
+                const findShape = await product.find({ type: 'accessories' });
                 if (findShape.length > 0) {
                         return res.status(200).json({ success: true, data: findShape });
                 } else {
@@ -2589,7 +2577,7 @@ exports.getAccessories = async (req, res) => {
 exports.updateAccessories = async (req, res) => {
         try {
                 const { id } = req.params;
-                const Accessoriess = await productModel.findById(id);
+                const Accessoriess = await product.findById(id);
                 if (!Accessoriess) {
                         return res.status(404).json({ message: "Accessories Not Found", status: 404, data: {} });
                 }
@@ -2610,7 +2598,7 @@ exports.updateAccessories = async (req, res) => {
 exports.removeAccessories = async (req, res) => {
         try {
                 const { id } = req.params;
-                const findShape = await productModel.findById(id);
+                const findShape = await product.findById(id);
                 if (!findShape) {
                         return res.status(404).json({ message: "Accessories Not Found", status: 404, data: {} });
                 } else {
