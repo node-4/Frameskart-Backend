@@ -11,6 +11,10 @@ const SubcategorySchema = new mongoose.Schema({
   image: {
     type: String
   },
+  type: {
+    type: String,
+    enum: ["ComputerGlasses", "ContactLenses", "Sunglasses","other"],
+},
 })
 
 module.exports = mongoose.model("Subcategory", SubcategorySchema);

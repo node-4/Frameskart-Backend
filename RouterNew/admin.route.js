@@ -51,6 +51,9 @@ module.exports = (app) => {
         app.put("/api/v1/subcategory/updatesubcategory/:id", [authJwt.verifyToken], upload.single('image'), auth.updateSubcategory);
         app.delete("/api/v1/subcategory/removesubcategory/:id", [authJwt.verifyToken], auth.removeSubcategory);
         app.get("/api/v1/subcategory/subcategory/:categoryId", auth.getSubcategoryByCategory);
+        app.get("/api/v1/subcategory/getSubcategoryByComputerGlasses", auth.getSubcategoryByComputerGlasses);
+        app.get("/api/v1/subcategory/getSubcategoryByContactLenses", auth.getSubcategoryByContactLenses);
+        app.get("/api/v1/subcategory/getSubcategoryBySunglasses", auth.getSubcategoryBySunglasses);
         app.post('/api/v1/banner', [authJwt.verifyToken], upload.single('image'), auth.AddBanner);
         app.get('/api/v1/banner', auth.getBanner);
         app.put('/api/v1/banner/updateBanner/:id', [authJwt.verifyToken], upload.single('image'), auth.updateBanner);
@@ -80,15 +83,11 @@ module.exports = (app) => {
         app.get("/api/v1/admin/getEyeTestCampById/:id", auth.getEyeTestCampById);
         app.delete("/api/v1/admin/deleteEyeTestCamp/:id", [authJwt.verifyToken], auth.deleteEyeTestCamp);
         app.get("/api/v1/admin/getAllEyeTestCampFormData", auth.getAllEyeTestCampFormData);
-        app.post("/api/v1/admin/ColorGender/addColorGender", [authJwt.verifyToken],upload.single('image'), auth.createColorGender);
+        app.post("/api/v1/admin/ColorGender/addColorGender", [authJwt.verifyToken], upload.single('image'), auth.createColorGender);
         app.get("/api/v1/admin/ColorGender/allColorGender", auth.getColorGender);
         app.get("/api/v1/admin/ColorGender/getColorGenderBytype/:type", auth.getColorGenderBytype);
-        app.put("/api/v1/admin/ColorGender/updateColorGender/:id", [authJwt.verifyToken],upload.single('image'), auth.updateColorGender);
+        app.put("/api/v1/admin/ColorGender/updateColorGender/:id", [authJwt.verifyToken], upload.single('image'), auth.updateColorGender);
         app.delete("/api/v1/admin/ColorGender/deleteColorGender/:id", [authJwt.verifyToken], auth.removeColorGender);
-        app.post("/api/v1/admin/Shape/addShape", [authJwt.verifyToken], upload.single('image'), auth.AddShape);
-        app.get("/api/v1/admin/Shape/allShape", auth.getShape);
-        app.put("/api/v1/admin/Shape/updateShape/:id", [authJwt.verifyToken], upload.single('image'), auth.updateShape);
-        app.delete("/api/v1/admin/Shape/deleteShape/:id", [authJwt.verifyToken], auth.removeShape);
         app.post("/api/v1/admin/Style/AddStyle", [authJwt.verifyToken], upload.single('image'), auth.AddStyle);
         app.get("/api/v1/admin/Style/allStyle", auth.getStyle);
         app.put("/api/v1/admin/Style/updateStyle/:id", [authJwt.verifyToken], upload.single('image'), auth.updateStyle);
@@ -143,7 +142,7 @@ module.exports = (app) => {
         app.post("/api/v1/lens/createLens", [authJwt.verifyToken], upload.single('image'), auth.createLens);
         app.get("/api/v1/lens/allLens", auth.getLens);
         app.put("/api/v1/lens/updateLens/:lensId", [authJwt.verifyToken], upload.single('image'), auth.updateLens);
-        app.delete("/api/v1/lens/deleteLens/:id", [authJwt.verifyToken], auth.removeLens);        
+        app.delete("/api/v1/lens/deleteLens/:id", [authJwt.verifyToken], auth.removeLens);
         app.post("/api/v1/admin/accessories/createAccessories", [authJwt.verifyToken], upload.single('image'), auth.createAccessories);
         app.get("/api/v1/admin/accessories/allAccessories", auth.getAccessories);
         app.put("/api/v1/admin/accessories/updateAccessories/:id", [authJwt.verifyToken], upload.single('image'), auth.updateAccessories);
@@ -157,7 +156,7 @@ module.exports = (app) => {
         app.delete("/api/v1/admin/deleteProducts/:id", [authJwt.verifyToken], auth.deleteProducts);
         app.post("/api/v1/admin/createBottomCard", upload.single('image'), [authJwt.verifyToken], auth.createBottomCard);
         app.get("/api/v1/admin/getBottomCard", auth.getBottomCard);
-        app.delete("/api/v1/admin/deleteBottomCard/:id", [authJwt.verifyToken], auth.deleteBottomCard);  
+        app.delete("/api/v1/admin/deleteBottomCard/:id", [authJwt.verifyToken], auth.deleteBottomCard);
         app.post("/api/v1/admin/createPremiumLenses", upload.single('image'), [authJwt.verifyToken], auth.createPremiumLenses);
         app.get("/api/v1/admin/getAllPremiumLenses", auth.getAllPremiumLenses);
         app.get("/api/v1/admin/getPremiumLensesById/:id", auth.getPremiumLensesById);

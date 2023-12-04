@@ -835,9 +835,6 @@ exports.listProduct = async (req, res) => {
         if (req.query.brand) {
           query.brand = req.query.brand;
         }
-        if (req.query.shape) {
-          query.shape = req.query.shape;
-        }
         if (req.query.style) {
           query.style = req.query.style;
         }
@@ -858,7 +855,7 @@ exports.listProduct = async (req, res) => {
           page: parseInt(req.query.page) || 1,
           limit: limit || 1000,
           sort: { createdAt: 1 },
-          populate: { path: 'category subcategory color gender brand shape style' },
+          populate: { path: 'category subcategory color gender brand frameId style' },
         };
         product.paginate(query, options, (transErr, transRes) => {
           if (transErr) {

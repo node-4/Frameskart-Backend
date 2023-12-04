@@ -107,15 +107,10 @@ const productSchema = mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: "Brand",
   },
-  shape: {
+  Style: {
     type: String,
     type: mongoose.Schema.ObjectId,
-    ref: "shapeStyle",
-  },
-  style: {
-    type: String,
-    type: mongoose.Schema.ObjectId,
-    ref: "shapeStyle",
+    ref: "Style",
   },
   frameId: {
     type: mongoose.Schema.ObjectId,
