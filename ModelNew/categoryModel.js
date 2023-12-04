@@ -10,7 +10,7 @@ const categorySchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ["Main", "FramesKartSmartSeries", "PremiumEyeWear", "FramesKartSeries"],
+        enum: ["Main", "FramesKartSmartSeries", "PremiumEyeWear", "PremiumLens", "FramesKartSeries"],
     },
     status: {
         type: String,
