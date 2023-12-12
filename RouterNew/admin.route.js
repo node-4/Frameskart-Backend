@@ -105,7 +105,7 @@ module.exports = (app) => {
         app.post("/api/v1/admin/AddVisionTestQuestion/:visionTestId", [authJwt.verifyToken], upload.single('image'), auth.addQuestionInVisionTest);
         app.get("/api/v1/admin/getVisionTestQuestionById/:id", auth.getVisionTestQuestionById);
         app.put("/api/v1/admin/updateVisionTestQuestion/:id", [authJwt.verifyToken], upload.single('image'), auth.updateQuestionInVisionTest);
-        app.get("/api/v1/admin/getAllVisionTestQuestion", auth.getQuestionInVisionTest);
+        app.get("/api/v1/admin/getAllVisionTestQuestion/:visionTestId", auth.getQuestionInVisionTest);
         app.delete("/api/v1/admin/deleteVisionTestQuestion/:id", [authJwt.verifyToken], auth.removeQuestionInVisionTest);
         app.post("/api/v1/Subscription", auth.createSubscription);
         app.get("/api/v1/Subscription", auth.getAllSubscription);
