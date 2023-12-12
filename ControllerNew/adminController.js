@@ -725,12 +725,15 @@ exports.createCategory = async (req, res) => {
                 if (findCategory) {
                         return res.status(409).json({ message: "category already exit.", status: 404, data: {} });
                 } else {
-                        if (req.file) {
-                                req.body.image = req.file.path
-                        } else {
-                                return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
+                        if (req.files['image']) {
+                                let image = req.files['image'];
+                                req.body.image = image[0].path;
                         }
-                        const data = { name: req.body.name, image: req.body.image, type: req.body.type };
+                        if (req.files['logo']) {
+                                let imagess = req.files['logo'];
+                                req.body.logo = imagess[0].path;
+                        }
+                        const data = { name: req.body.name, image: req.body.image, logo: req.body.logo, type: req.body.type };
                         const category = await Category.create(data);
                         return res.status(200).json({ message: "category add successfully.", status: 200, data: category });
                 }
@@ -757,12 +760,19 @@ exports.updateCategory = async (req, res) => {
                 if (!updateOffer) {
                         return res.status(404).json({ message: "Category Not Found", status: 404, data: {} });
                 }
-                if (req.file) {
-                        updateOffer.image = req.file.path
+                if (req.files['image']) {
+                        let image = req.files['image'];
+                        updateOffer.image = image[0].path;
                 } else {
                         updateOffer.image = offer.image;
                 }
-                updateOffer.name = req.body.name;
+                if (req.files['logo']) {
+                        let imagess = req.files['logo'];
+                        updateOffer.logo = imagess[0].path;
+                } else {
+                        updateOffer.logo = offer.logo;
+                }
+                updateOffer.name = req.body.name || updateOffer.name;
                 let update = await updateOffer.save();
                 return res.status(200).json({ message: "Updated Successfully", status: 200, data: update });
         } catch (error) {
@@ -845,14 +855,14 @@ exports.getFramesKartSeriesCategories = async (req, res) => {
 };
 exports.createSubcategory = async (req, res) => {
         try {
-                let findSubcategory = await Subcategory.findOne({ name: req.body.name,categoryId: req.body.categoryId, type: req.body.type });
+                let findSubcategory = await Subcategory.findOne({ name: req.body.name, categoryId: req.body.categoryId, type: req.body.type });
                 if (findSubcategory) {
                         return res.status(409).json({ message: "Subcategory already exit.", status: 404, data: {} });
                 } else {
                         if (req.file) {
                                 req.body.image = req.file.path
                         }
-                        const data = { name: req.body.name, categoryId: req.body.categoryId, image: req.body.image,type: req.body.type };
+                        const data = { name: req.body.name, categoryId: req.body.categoryId, image: req.body.image, type: req.body.type };
                         const subcategory = await Subcategory.create(data);
                         return res.status(200).json({ message: "Subcategory add successfully.", status: 200, data: subcategory });
                 }
@@ -1490,7 +1500,7 @@ exports.createColorGender = async (req, res) => {
                 } else {
                         let data;
                         if (req.body.type == "Gender") {
-                                if(req.file){
+                                if (req.file) {
                                         req.body.image = req.file.path
                                 }
                                 data = {
@@ -1540,10 +1550,10 @@ exports.updateColorGender = async (req, res) => {
                 if (!category) {
                         return res.status(404).json({ message: "Data Not Found", status: 404, data: {} });
                 }
-                if(req.file){
+                if (req.file) {
                         category.image = req.file.path
-                }else{
-                        category.image=category.image
+                } else {
+                        category.image = category.image
                 }
                 category.name = req.body.name || category.name;
                 category.type = category.type;;
@@ -1589,7 +1599,7 @@ exports.AddStyle = async (req, res) => {
 };
 exports.getStyle = async (req, res) => {
         try {
-                const findShape = await shape.find({ });
+                const findShape = await shape.find({});
                 if (findShape.length > 0) {
                         return res.status(200).json({ status: 200, message: "Style found.", data: findShape });
                 } else {
@@ -2553,7 +2563,7 @@ exports.createAccessories = async (req, res) => {
                                 return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
                         }
                         let productId = await reffralCode()
-                        const data = { name: req.body.name, price: req.body.price, productId:productId,image: req.body.image, type: 'accessories' };
+                        const data = { name: req.body.name, price: req.body.price, productId: productId, image: req.body.image, type: 'accessories' };
                         console.log(data);
                         const accessorie = await product.create(data);
                         return res.status(200).json({ message: "Accessories add successfully.", status: 200, data: accessorie });
@@ -2933,7 +2943,7 @@ const reffralCode = async () => {
         var digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         let OTP = '';
         for (let i = 0; i < 9; i++) {
-          OTP += digits[Math.floor(Math.random() * 36)];
+                OTP += digits[Math.floor(Math.random() * 36)];
         }
         return OTP;
-      }
+}

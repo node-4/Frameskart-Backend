@@ -37,9 +37,9 @@ module.exports = (app) => {
         app.get("/api/v1/admin/notification/allNotification", authJwt.verifyToken, auth.allNotification);
         app.get('/api/v1/admin/getOrder', [authJwt.verifyToken], auth.getOrder);
         app.put('/api/v1/admin/updateOrderStatus/:id', [authJwt.verifyToken], auth.updateOrderStatus);
-        app.post("/api/v1/category/createCategory", [authJwt.verifyToken], upload.single('image'), auth.createCategory);
+        app.post("/api/v1/category/createCategory", [authJwt.verifyToken], brandUpload, auth.createCategory);
         app.get("/api/v1/category/allCategory", auth.getCategories);
-        app.put("/api/v1/category/updateCategory/:id", [authJwt.verifyToken], upload.single('image'), auth.updateCategory);
+        app.put("/api/v1/category/updateCategory/:id", [authJwt.verifyToken], brandUpload, auth.updateCategory);
         app.delete("/api/v1/category/removeCategory/:id", [authJwt.verifyToken], auth.removeCategory);
         app.get("/api/v1/category/getMainCategories", auth.getMainCategories);
         app.get("/api/v1/category/getFramesKartSmartSeriesCategories", auth.getFramesKartSmartSeriesCategories);
