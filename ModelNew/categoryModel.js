@@ -8,6 +8,9 @@ const categorySchema = new mongoose.Schema({
     image: {
         type: String
     },
+    logo: {
+        type: String
+    },
     type: {
         type: String,
         enum: ["Main", "FramesKartSmartSeries", "PremiumEyeWear", "PremiumLens", "FramesKartSeries"],
