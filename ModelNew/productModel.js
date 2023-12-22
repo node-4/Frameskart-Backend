@@ -16,12 +16,14 @@ const productSchema = mongoose.Schema({
   mrp: {
     type: Number,
   },
+  tryFramesAtHome: {
+    type: Number,
+  },
   image: {
     type: String
   },
   name: {
     type: String,
-    required: true,
   },
   productId: {
     type: String,
@@ -43,19 +45,15 @@ const productSchema = mongoose.Schema({
       user: {
         type: mongoose.Schema.ObjectId,
         ref: "User",
-        required: true,
       },
       name: {
         type: String,
-        required: true,
       },
       rating: {
         type: Number,
-        required: true,
       },
       comment: {
         type: String,
-        required: true,
       },
     },
   ],

@@ -2696,6 +2696,7 @@ exports.createBreakageCoverage = async (req, res, next) => {
                                 return res.status(404).json({ message: "Please provide image.", status: 404, data: {}, });
                         }
                         req.body.type = "BreakageCoverage";
+                        req.body.productId = await reffralCode()
                         const findProduct = await product.create(req.body);
                         return res.status(200).json({ message: "Breakage Coverage add successfully.", status: 200, data: findProduct, });
                 } else {
@@ -2706,6 +2707,7 @@ exports.createBreakageCoverage = async (req, res, next) => {
                         }
                         Ads.description = req.body.description || Ads.description;
                         Ads.price = req.body.price || Ads.price;
+                        Ads.tryFramesAtHome = req.body.tryFramesAtHome || Ads.tryFramesAtHome;
                         Ads.save();
                         return res.status(200).json({ message: "Breakage Coverage add successfully.", status: 200, data: Ads, });
                 }
