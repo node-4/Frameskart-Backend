@@ -1019,7 +1019,7 @@ exports.myWishlist = async (req, res, next) => {
 };
 exports.getProductDetails = async (req, res, next) => {
   try {
-    const product = await productModel.findById(req.params.id);
+    const product = await product.findById(req.params.id);
     if (!product) {
       return next(new ErrorHander("Product not found", 404));
     }
@@ -1055,7 +1055,7 @@ exports.addToCart = async (req, res, next) => {
   try {
     const cart = await cartModel.findOne({ user: req.user._id });
     if (!cart) {
-      const products = await productModel.findById(req.params.id);
+      const products = await product.findById(req.params.id);
       if (!products) {
         return next(new ErrorHander("Product not found", 404));
       }
@@ -1066,7 +1066,7 @@ exports.addToCart = async (req, res, next) => {
       const savedCart = await cartModel.create(newCart);
       return res.status(200).json({ status: 200, message: "Product added to cart successfully", data: savedCart, });
     } else {
-      const products = await productModel.findById(req.params.id);
+      const products = await product.findById(req.params.id);
       if (!products) {
         return next(new ErrorHander("Product not found", 404));
       }
