@@ -106,6 +106,40 @@ exports.verifyOtplogin = async (req, res) => {
     return res.status(500).send({ status: 500, message: "Server error" + error.message });
   }
 };
+exports.updateProfile = async (req, res) => {
+  try {
+    const { fullName, firstName, lastName, mobileNumber, email, address } = req.body;
+    const user = await User.findOne({ _id: req.user.id });
+    if (!user) {
+      return res.status(404).send({ message: "user not found ! not registered" });
+    }
+    if (user.email !== email) {
+      let user1 = await User.findOne({ email: email });
+      if (user1) {
+        return res.status(409).send({ message: "Already Exist", data: [] });
+      }
+    }
+    if (user.mobileNumber !== mobileNumber) {
+      let user1 = await User.findOne({ mobileNumber: mobileNumber });
+      if (user1) {
+        return res.status(409).send({ message: "Already Exist", data: [] });
+      }
+    }
+    let obj = {
+      fullName: fullName,
+      firstName: firstName,
+      lastName: lastName,
+      mobileNumber: mobileNumber,
+      email: email,
+      address: address
+    }
+    const userUpdate = await User.findByIdAndUpdate({ _id: req.user.id }, obj, { new: true });
+    return res.status(200).send({ status: 200, message: "user profile update.", data: userUpdate, });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Server error" + error.message });
+  }
+};
 exports.getUserDetails = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);

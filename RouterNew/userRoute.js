@@ -7,6 +7,7 @@ module.exports = (app) => {
         app.post("/api/v1/user/socialLogin", auth.socialLogin);
         app.post("/api/v1/user/verify/otp", auth.verifyOtplogin);
         app.get("/api/v1/user/me", authJwt.verifyToken, auth.getUserDetails);
+        app.put("/api/v1/user/updateProfile", authJwt.verifyToken, auth.updateProfile);
         app.put('/api/v1/user/updateWhatAppnotificationStatus', [authJwt.verifyToken], auth.updateWhatAppnotificationStatus);
         app.put('/api/v1/user/updateSmsNotificationStatus', [authJwt.verifyToken], auth.updateSmsNotificationStatus);
         app.put('/api/v1/user/updatepushNotificationStatus', [authJwt.verifyToken], auth.updatepushNotificationStatus);
@@ -38,7 +39,7 @@ module.exports = (app) => {
         app.post("/api/v1/takeSubscription/:id", [authJwt.verifyToken], auth.takeSubscription);
         app.post("/api/v1/takeSubscriptionFromWebsite/:id", [authJwt.verifyToken], auth.takeSubscriptionFromWebsite);
         app.post("/api/v1/verifySubscription/:transactionId", [authJwt.verifyToken], auth.verifySubscription);
-        app.get("/api/v1/user/getProducts",[authJwt.verifyToken], auth.listProduct);
+        app.get("/api/v1/user/getProducts", [authJwt.verifyToken], auth.listProduct);
         app.get("/api/v1/user/newArrivalProduct", auth.newArrivalProduct);
         app.post("/api/v1/user/createWishlist/:id", [authJwt.verifyToken], auth.createWishlist);
         app.post("/api/v1/user/removeFromWishlist/:id", [authJwt.verifyToken], auth.removeFromWishlist);

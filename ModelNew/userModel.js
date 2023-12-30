@@ -27,6 +27,9 @@ const userSchema = new mongoose.Schema({
   socialType: {
     type: String
   },
+  address: {
+    type: String
+  },
   password: {
     type: String
   },
@@ -67,7 +70,7 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  subscriptionExpiration:{
+  subscriptionExpiration: {
     type: Date
   },
   wallet: {
