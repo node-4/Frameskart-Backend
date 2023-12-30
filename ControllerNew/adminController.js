@@ -9,6 +9,7 @@ const eyeTestCamp = require("../ModelNew/eyeTestCamp");
 const Faq = require('../ModelNew/faq')
 const frame = require('../ModelNew/frame')
 const Guide = require("../ModelNew/Guides/guide")
+const guideQuestion = require("../ModelNew/Guides/guideQuestion")
 const notification = require("../ModelNew/notification");
 const recommendeYoutube = require("../ModelNew/recommende&youtubeCornerByBanner");
 const offer = require('../ModelNew/offerModel')
