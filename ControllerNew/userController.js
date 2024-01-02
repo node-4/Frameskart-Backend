@@ -11,6 +11,7 @@ const franchiseTestimonial = require("../ModelNew/FranchiseRegistration/franchis
 const savePower = require("../ModelNew/savePower");
 const helpandSupport = require('../ModelNew/helpAndSupport');
 const notification = require("../ModelNew/notification");
+const userOrders = require("../ModelNew/userOrders");
 const Address = require("../ModelNew/Address");
 const transaction = require('../ModelNew/transactionModel');
 const visionTestQuestion = require("../ModelNew/visionTest/visionTestQuestion");
@@ -1161,6 +1162,105 @@ exports.getCart = async (req, res, next) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+exports.getOrder = async (req, res, next) => {
+  try {
+    if (req.query.orderStatus != (null || undefined)) {
+      const cart = await userOrders.find({ userId: req.user._id, orderStatus: req.query.orderStatus }).populate('products.productId');
+      if (cart.length == 0) {
+        return res.status(404).json({ message: 'Orders not found for the specified user.' });
+      }
+      return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
+    } else {
+      const cart = await userOrders.find({ userId: req.user._id }).populate('products.productId')
+      if (cart.length == 0) {
+        return res.status(404).json({ message: 'Orders not found for the specified user.' });
+      }
+      return res.status(200).json({ success: true, msg: "Orders retrieved successfully", data: cart });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getOrderById = async (req, res) => {
+  try {
+    const Ads = await userOrders.findById({ _id: req.params.id });
+    if (!Ads) {
+      return res.status(404).json({ status: 404, message: "No data found", data: {} });
+    }
+    return res.status(200).json({ status: 200, message: "Data found successfully.", data: Ads })
+  } catch (err) {
+    console.log(err);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.checkout = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id }).populate('products.productId');
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found for the specified user.' });
+    }
+    const updatedProducts = cart.products.map((cartProduct) => {
+      return {
+        productId: cartProduct.productId._id,
+        price: cartProduct.productId.soldPrice || cartProduct.productId.price,
+        discountPrice: 0,
+        quantity: cartProduct.quantity
+      };
+    });
+    const orderTotalAmount = calculateTotalAmount(updatedProducts);
+    let orderId = await reffralCode()
+    const order = new userOrders({ userId: req.user._id, orderId: orderId, products: updatedProducts, orderObjTotalAmount: orderTotalAmount, });
+    await order.save();
+    return res.status(200).json({ message: 'Order placed successfully.' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error during checkout' });
+  }
+}
+exports.successOrder = async (req, res) => {
+  try {
+    let findUserOrder = await userOrders.findOne({ orderId: req.params.orderId });
+    if (findUserOrder) {
+      const user = await User.findById({ _id: findUserOrder.userId });
+      if (!user) {
+        return res.status(404).send({ status: 404, message: "User not found or token expired." });
+      }
+      let update2 = await userOrders.findOneAndUpdate({ orderId: findUserOrder.orderId }, { $set: { orderStatus: "confirmed", paymentStatus: "paid" } }, { new: true });
+      let deleteCart = await cartModel.findOneAndDelete({ user: findUserOrder.userId });
+      if (deleteCart) {
+        return res.status(200).json({ message: "Payment success.", status: 200, data: update2 });
+      }
+    } else {
+      return res.status(404).json({ message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+exports.cancelOrder = async (req, res) => {
+  try {
+    let findUserOrder = await userOrders.findOne({ orderId: req.params.orderId });
+    if (findUserOrder) {
+      return res.status(201).json({ message: "Payment failed.", status: 201, orderId: req.params.orderId });
+    } else {
+      return res.status(404).json({ message: "No data found", data: {} });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+  }
+};
+
+
+function calculateTotalAmount(products) {
+  let totalAmount = 0;
+  products.forEach((product) => {
+    const totalPrice = product.price - product.discountPrice;
+    totalAmount += totalPrice * product.quantity;
+  });
+  return totalAmount.toFixed(2);
+}
 const reffralCode = async () => {
   var digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let OTP = '';
