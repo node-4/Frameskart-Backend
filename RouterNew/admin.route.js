@@ -130,9 +130,9 @@ module.exports = (app) => {
         app.get("/api/v1/lens/allPowerTypeCategory", auth.getPowerTypeCategories);
         app.put("/api/v1/lens/updatePowerTypeCategory/:id", [authJwt.verifyToken], upload.single('image'), auth.updatePowerTypeCategory);
         app.delete("/api/v1/lens/removePowerTypeCategory/:id", [authJwt.verifyToken], auth.removePowerTypeCategory);
-        app.post("/api/v1/lens/createPowerTypeSubcategory", [authJwt.verifyToken], upload.single('image'), auth.createPowerTypeSubcategory);
+        app.post("/api/v1/lens/createPowerTypeSubcategory", [authJwt.verifyToken], auth.createPowerTypeSubcategory);
         app.get("/api/v1/lens/allsubcategory", auth.getPowerTypeSubcategories);
-        app.put("/api/v1/lens/updatesubcategory/:id", [authJwt.verifyToken], upload.single('image'), auth.updatePowerTypeSubcategory);
+        app.put("/api/v1/lens/updatesubcategory/:id", [authJwt.verifyToken],  auth.updatePowerTypeSubcategory);
         app.delete("/api/v1/lens/removesubcategory/:id", [authJwt.verifyToken], auth.removePowerTypeSubcategory);
         app.get("/api/v1/lens/subcategory/:categoryId", auth.getPowerTypeSubcategoryByCategory);
         app.post("/api/v1/admin/Frame/AddFrame", [authJwt.verifyToken], upload.single('image'), auth.AddFrame);

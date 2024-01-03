@@ -2213,7 +2213,7 @@ exports.createPowerTypeCategory = async (req, res) => {
                         } else {
                                 return res.status(404).json({ message: "First Chosse an image.", status: 404, data: {} });
                         }
-                        const data = { name: req.body.name, image: req.body.image, };
+                        const data = { name: req.body.name, description: req.body.description, image: req.body.image, };
                         const category = await powerTypeCategory.create(data);
                         return res.status(200).json({ message: "Power Type Category add successfully.", status: 200, data: category });
                 }
@@ -2268,7 +2268,7 @@ exports.removePowerTypeCategory = async (req, res) => {
 };
 exports.createPowerTypeSubcategory = async (req, res) => {
         try {
-                let findSubcategory = await powerTypeSubCategory.findOne({ name: req.body.name });
+                let findSubcategory = await powerTypeSubCategory.findOne({ name: req.body.name, categoryId: req.body.categoryId });
                 if (findSubcategory) {
                         return res.status(409).json({ message: "Power Type Subcategory already exit.", status: 404, data: {} });
                 } else {
