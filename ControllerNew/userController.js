@@ -1013,7 +1013,7 @@ exports.removeFromWishlist = async (req, res, next) => {
       return res.status(404).json({ message: "Wishlist not found", status: 404 });
     }
     const productId = req.params.id;
-    const viewProduct = await Product.findById(productId);
+    const viewProduct = await product.findById(productId);
     if (!viewProduct) {
       return res.status(404).json({ message: "Product not found", status: 404 });
     }
