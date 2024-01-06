@@ -48,9 +48,12 @@ module.exports = (app) => {
         app.get('/api/v1/getRecentlyView', [authJwt.verifyToken], auth.getRecentlyView);
         app.get('/api/v1/cart', [authJwt.verifyToken], auth.getCart);
         app.post('/api/v1/addToCart/:id', [authJwt.verifyToken], auth.addToCart);
+        app.get('/api/v1/getCartLens', [authJwt.verifyToken], auth.getCartLens);
+        app.post('/api/v1/addToCartLens/:id', [authJwt.verifyToken], auth.addToCartLens);
         app.post('/api/v1/checkout', [authJwt.verifyToken], auth.checkout);
         app.get("/api/v1/successOrder/:orderId", [authJwt.verifyToken], auth.successOrder);
         app.get("/api/v1/cancelOrder/:orderId", [authJwt.verifyToken], auth.cancelOrder);
         app.get('/api/v1/user/getOrder', [authJwt.verifyToken], auth.getOrder);
         app.get('/api/v1/user/getOrderbyId/:id', [authJwt.verifyToken], auth.getOrderById);
+        app.post('/api/v1/checkoutLens', [authJwt.verifyToken], auth.checkoutLens);
 }

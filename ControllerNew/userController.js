@@ -20,6 +20,7 @@ const product = require("../ModelNew/productModel");
 const cartModel = require("../ModelNew/cartModel");
 const Wishlist = require("../ModelNew/whishList");
 const recentlyView = require("../ModelNew/recentlyView");
+const lens = require("../ModelNew/Lens/lens");
 exports.socialLogin = async (req, res) => {
   try {
     let userData = await User.findOne({ $or: [{ mobileNumber: req.body.mobileNumber }, { socialId: req.body.socialId }, { socialType: req.body.socialType }] });
@@ -1251,8 +1252,111 @@ exports.cancelOrder = async (req, res) => {
     return res.status(501).send({ status: 501, message: "server error.", data: {}, });
   }
 };
+exports.addToCartLens = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id });
+    if (!cart) {
+      const findLens = await lens.findById(req.params.id);
+      if (!findLens) {
+        return next(new ErrorHander("Product not found", 404));
+      }
+      const newCart = {
+        user: req.user._id,
+        lens: [{ lensId: findLens._id, quantity: req.body.quantity }],
+      };
+      const savedCart = await cartModel.create(newCart);
+      return res.status(200).json({ status: 200, message: "Product added to cart successfully", data: savedCart, });
+    } else {
+      const findLens = await lens.findById(req.params.id);
+      if (!findLens) {
+        return next(new ErrorHander("Product not found", 404));
+      }
+      const existingProduct = cart.lens.find((item) => item.lensId.toString() === findLens._id.toString());
+      if (existingProduct) {
+        existingProduct.quantity = req.body.quantity;
+      } else {
+        cart.lens.push({ lensId: findLens._id, quantity: req.body.quantity });
+      }
+      const savedCart = await cart.save();
+      return res.status(200).json({ status: 200, message: "Product added to cart successfully", data: savedCart, });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getCartLens = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id }).populate('lens.lensId');
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found for the specified user.' });
+    }
+    const updatedProducts = cart.lens.map((cartProduct) => {
+      const product = cartProduct.lensId;
+      const mrp = product.price || 0;
+      const netPrice = product.price;
+      let discount = 0;
+      if (mrp > 0) {
+        discount = mrp - netPrice;
+      } else {
+        discount = 0
+      }
+      return {
+        ...cartProduct.toObject(),
+        mrp,
+        netPrice,
+        discount,
+        total: cartProduct.quantity * netPrice,
+      };
+    });
+    const totalPrice = updatedProducts.reduce((total, cartProduct) => {
+      return total + cartProduct.total;
+    }, 0);
+    return res.status(200).json({
+      status: 200,
+      message: "Get cart successfully",
+      data: {
+        cart: { ...cart.toObject(), products: updatedProducts },
+        totalPrice,
 
-
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.checkoutLens = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id }).populate('lens.lensId');
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found for the specified user.' });
+    }
+    const updatedProducts = cart.lens.map((cartProduct) => {
+      return {
+        lensId: cartProduct.lensId._id,
+        price: cartProduct.lensId.soldPrice || cartProduct.lensId.price,
+        discountPrice: 0,
+        quantity: cartProduct.quantity
+      };
+    });
+    const orderTotalAmount = calculateTotalAmount1(updatedProducts);
+    let orderId = await reffralCode()
+    const order = new userOrders({ userId: req.user._id, orderId: orderId, products: updatedProducts, orderObjTotalAmount: orderTotalAmount, });
+    await order.save();
+    return res.status(200).json({ message: 'Order placed successfully.' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Internal server error during checkout' });
+  }
+}
+function calculateTotalAmount1(products) {
+  let totalAmount = 0;
+  products.forEach((product) => {
+    const totalPrice = product.price - product.discountPrice;
+    totalAmount += totalPrice * product.quantity;
+  });
+  return totalAmount.toFixed(2);
+}
 function calculateTotalAmount(products) {
   let totalAmount = 0;
   products.forEach((product) => {

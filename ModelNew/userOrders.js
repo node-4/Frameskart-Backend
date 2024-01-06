@@ -18,6 +18,22 @@ const cartProductsSchema = new schema({
     default: 1
   }
 }, { _id: false })
+const cartLenseSchema = new schema({
+  lensId: {
+    type: schema.Types.ObjectId,
+    ref: "lens"
+  },
+  quantity: {
+    type: Number,
+    default: 1
+  },
+  price: {
+    type: Number,
+  },
+  discountPrice: {
+    type: Number,
+  }
+}, { _id: false })
 const DocumentSchema = schema({
   userId: {
     type: schema.Types.ObjectId,
@@ -28,6 +44,9 @@ const DocumentSchema = schema({
   },
   products: {
     type: [cartProductsSchema]
+  },
+  lens: {
+    type: [cartLenseSchema]
   },
   orderObjTotalAmount: {
     type: String,
