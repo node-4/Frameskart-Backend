@@ -1163,6 +1163,21 @@ exports.getCart = async (req, res, next) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+exports.deleteCart = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id });
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found for the specified user.' });
+    }
+    const findData = await cartModel.findByIdAndDelete({ _id: cart._id })
+    if (findData) {
+      return res.status(200).json({ status: 200, message: "Get cart successfully", data: findData, });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 exports.getOrder = async (req, res, next) => {
   try {
     if (req.query.orderStatus != (null || undefined)) {
