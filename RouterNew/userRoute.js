@@ -17,6 +17,7 @@ module.exports = (app) => {
         app.post("/api/v1/feedback/giveFeedback", authJwt.verifyToken, auth.giveFeedback);
         app.get("/api/v1/feedback/GetAllFeedBack", auth.GetAllFeedBack);
         app.get("/api/v1/feedback/GetFeedbackById/:id", auth.GetFeedbackById);
+        app.post("/api/v1/user/applyforHomeTryOn", authJwt.verifyToken, auth.applyforHomeTryOn);
         app.post("/api/v1/user/applyforEyeTestCamp", authJwt.verifyToken, auth.applyforEyeTestCamp);
         app.post("/api/v1/user/applyforFranchiseInquiry", authJwt.verifyToken, auth.applyforFranchiseInquiry);
         app.post('/api/v1/user/help/addQuery', [authJwt.verifyToken], auth.AddQuery);

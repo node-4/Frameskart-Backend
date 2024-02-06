@@ -11,6 +11,7 @@ const franchiseTestimonial = require("../ModelNew/FranchiseRegistration/franchis
 const savePower = require("../ModelNew/savePower");
 const helpandSupport = require('../ModelNew/helpAndSupport');
 const notification = require("../ModelNew/notification");
+const homeTryOn = require("../ModelNew/homeTryOn");
 const userOrders = require("../ModelNew/userOrders");
 const Address = require("../ModelNew/Address");
 const transaction = require('../ModelNew/transactionModel');
@@ -208,6 +209,17 @@ exports.applyforEyeTestCamp = async (req, res) => {
       if (saveUser) {
         return res.status(200).send({ status: 200, message: "Request send for eyeTest camp ", data: saveUser, });
       }
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+exports.applyforHomeTryOn = async (req, res) => {
+  try {
+    let saveUser = await homeTryOn(req.body).save();
+    if (saveUser) {
+      return res.status(200).send({ status: 200, message: "Request send for HomeTryOn", data: saveUser, });
     }
   } catch (error) {
     console.error(error);

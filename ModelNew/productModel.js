@@ -125,7 +125,7 @@ const productSchema = mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["product", "accessories", "BreakageCoverage"],
+    enum: ["product", "accessories", "BreakageCoverage", "EyeTestAtHome"],
     default: "product"
   },
 }, { timestamps: true });
