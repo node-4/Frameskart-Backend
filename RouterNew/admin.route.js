@@ -132,7 +132,7 @@ module.exports = (app) => {
         app.delete("/api/v1/lens/removePowerTypeCategory/:id", [authJwt.verifyToken], auth.removePowerTypeCategory);
         app.post("/api/v1/lens/createPowerTypeSubcategory", [authJwt.verifyToken], auth.createPowerTypeSubcategory);
         app.get("/api/v1/lens/allsubcategory", auth.getPowerTypeSubcategories);
-        app.put("/api/v1/lens/updatesubcategory/:id", [authJwt.verifyToken],  auth.updatePowerTypeSubcategory);
+        app.put("/api/v1/lens/updatesubcategory/:id", [authJwt.verifyToken], auth.updatePowerTypeSubcategory);
         app.delete("/api/v1/lens/removesubcategory/:id", [authJwt.verifyToken], auth.removePowerTypeSubcategory);
         app.get("/api/v1/lens/subcategory/:categoryId", auth.getPowerTypeSubcategoryByCategory);
         app.post("/api/v1/admin/Frame/AddFrame", [authJwt.verifyToken], upload.single('image'), auth.AddFrame);
@@ -150,6 +150,9 @@ module.exports = (app) => {
         app.post("/api/v1/admin/createBreakageCoverage", upload.single('image'), [authJwt.verifyToken], auth.createBreakageCoverage);
         app.get("/api/v1/admin/getBreakageCoverage", auth.getBreakageCoverage);
         app.delete("/api/v1/admin/deleteBreakageCoverage/:id", [authJwt.verifyToken], auth.deleteBreakageCoverage);
+        app.post("/api/v1/admin/createEyeTestAtHome", upload.single('image'), [authJwt.verifyToken], auth.createEyeTestAtHome);
+        app.get("/api/v1/admin/getEyeTestAtHome", auth.getEyeTestAtHome);
+        app.delete("/api/v1/admin/deleteEyeTestAtHome/:id", [authJwt.verifyToken], auth.deleteEyeTestAtHome);
         app.post("/api/v1/admin/createProduct", productUpload, [authJwt.verifyToken], auth.createProduct);
         app.get("/api/v1/admin/getProducts", auth.getProducts);
         app.get("/api/v1/admin/getProductsbyid/:id", auth.getProductDetails);

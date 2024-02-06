@@ -34,6 +34,23 @@ const CartSchema = new Schema({
     lens: {
         type: [cartLensSchema]
     },
+    framesKartAtHomeProductId: {
+        type: Schema.Types.ObjectId,
+        ref: "Product"
+    },
+    framesKartAtHomeDate: {
+        type: Date,
+    },
+    framesKartAtHomeTime: {
+        type: String,
+    },
+    framesKartAtHomeContact: {
+        type: String,
+    },
+    framesKartAtHomeQuantity: {
+        type: Number,
+        default: 1
+    },
     coupon: {
         type: Schema.Types.ObjectId,
         ref: "Coupon",

@@ -1132,6 +1132,56 @@ exports.addToCart = async (req, res, next) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+exports.addFrameKartAtHomeToCart = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id });
+    if (!cart) {
+      const products = await product.findById(req.params.id);
+      if (!products) {
+        return next(new ErrorHander("Product not found", 404));
+      }
+      const newCart = {
+        user: req.user._id,
+        framesKartAtHomeProductId: products._id,
+        framesKartAtHomeQuantity: req.body.quantity,
+        framesKartAtHomeDate: req.body.date,
+        framesKartAtHomeTime: req.body.time,
+        framesKartAtHomeContact: req.body.contact,
+      };
+      const savedCart = await cartModel.create(newCart);
+      return res.status(200).json({ status: 200, message: "Product added to cart successfully", data: savedCart });
+    } else {
+      const products = await product.findById(req.params.id);
+      if (!products) {
+        return next(new ErrorHander("Product not found", 404));
+      }
+      const savedCart = await cartModel.findOneAndUpdate({ user: req.user._id }, { $set: { framesKartAtHomeProductId: products._id, framesKartAtHomeQuantity: req.body.quantity, framesKartAtHomeDate: req.body.date, framesKartAtHomeTime: req.body.time, framesKartAtHomeContact: req.body.contact, }, }, { new: true });
+      return res.status(200).json({ status: 200, message: "Cart updated successfully", data: savedCart });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getFrameKartAtHomeToCart = async (req, res, next) => {
+  try {
+    const cart = await cartModel.findOne({ user: req.user._id }).populate('framesKartAtHomeProductId').select('-products')
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found for the specified user.' });
+    }
+    let totalPrice = 0;
+    totalPrice = cart.framesKartAtHomeProductId.price * cart.framesKartAtHomeQuantity;
+    return res.status(200).json({
+      status: 200,
+      message: "Get cart successfully",
+      data: cart,
+      totalPrice: totalPrice,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 exports.getCart = async (req, res, next) => {
   try {
     const cart = await cartModel.findOne({ user: req.user._id }).populate('products.productId');

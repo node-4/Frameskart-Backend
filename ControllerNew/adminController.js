@@ -2742,6 +2742,61 @@ exports.deleteBreakageCoverage = async (req, res) => {
                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
+exports.createEyeTestAtHome = async (req, res, next) => {
+        try {
+                const Ads = await product.findOne({ type: "EyeTestAtHome" });
+                if (!Ads) {
+                        if (req.file) {
+                                req.body.image = req.file.path;
+                        } else {
+                                return res.status(404).json({ message: "Please provide image.", status: 404, data: {}, });
+                        }
+                        req.body.type = "EyeTestAtHome";
+                        req.body.productId = await reffralCode()
+                        const findProduct = await product.create(req.body);
+                        return res.status(200).json({ message: "EyeTestAtHome add successfully.", status: 200, data: findProduct, });
+                } else {
+                        if (req.file) {
+                                Ads.image = req.file.path;
+                        } else {
+                                Ads.image = Ads.image;
+                        }
+                        Ads.description = req.body.description || Ads.description;
+                        Ads.price = req.body.price || Ads.price;
+                        Ads.tryFramesAtHome = req.body.tryFramesAtHome || Ads.tryFramesAtHome;
+                        Ads.save();
+                        return res.status(200).json({ message: "EyeTestAtHome add successfully.", status: 200, data: Ads, });
+                }
+        } catch (error) {
+                return res.status(500).json({ status: 500, message: "internal server error ", data: error.message, });
+        }
+};
+exports.getEyeTestAtHome = async (req, res) => {
+        try {
+                const Ads = await product.findOne({ type: "EyeTestAtHome" });
+                if (!Ads) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                } else {
+                        return res.status(200).json({ status: 200, message: "EyeTestAtHome Data found successfully.", data: Ads })
+                }
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.deleteEyeTestAtHome = async (req, res) => {
+        try {
+                const findProduct = await product.findById({ _id: req.params.id });
+                if (!findProduct) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                await product.findByIdAndDelete({ _id: req.params.id });
+                return res.status(200).json({ status: 200, message: "EyeTestAtHome delete successfully.", data: {} })
+        } catch (err) {
+                console.log(err);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
 exports.createBottomCard = async (req, res, next) => {
         try {
                 const findBottomCard = await bottomCard.findOne({ type: req.body.type });

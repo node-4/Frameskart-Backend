@@ -52,6 +52,8 @@ module.exports = (app) => {
         app.post('/api/v1/addToCart/:id', [authJwt.verifyToken], auth.addToCart);
         app.get('/api/v1/getCartLens', [authJwt.verifyToken], auth.getCartLens);
         app.post('/api/v1/addToCartLens/:id', [authJwt.verifyToken], auth.addToCartLens);
+        app.get('/api/v1/getFrameKartAtHomeToCart', [authJwt.verifyToken], auth.getFrameKartAtHomeToCart);
+        app.post('/api/v1/addFrameKartAtHomeToCart/:id', [authJwt.verifyToken], auth.addFrameKartAtHomeToCart);
         app.post('/api/v1/checkout', [authJwt.verifyToken], auth.checkout);
         app.get("/api/v1/successOrder/:orderId", [authJwt.verifyToken], auth.successOrder);
         app.get("/api/v1/cancelOrder/:orderId", [authJwt.verifyToken], auth.cancelOrder);

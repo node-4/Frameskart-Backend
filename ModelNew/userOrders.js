@@ -58,6 +58,23 @@ const DocumentSchema = schema({
   couponDiscount: {
     type: String,
   },
+  framesKartAtHomeProductId: {
+    type: schema.Types.ObjectId,
+    ref: "Product"
+  },
+  framesKartAtHomeDate: {
+    type: Date,
+  },
+  framesKartAtHomeTime: {
+    type: String,
+  },
+  framesKartAtHomeContact: {
+    type: String,
+  },
+  framesKartAtHomeQuantity: {
+    type: Number,
+    default: 1
+  },
   orderObjPaidAmount: {
     type: String,
   },
